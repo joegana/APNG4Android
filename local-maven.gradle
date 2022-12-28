@@ -1,0 +1,62 @@
+apply plugin: 'com.jfrog.artifactory'
+apply plugin: 'maven-publish'
+
+publishing {
+    publications {
+        aar(MavenPublication) {
+            groupId = "${package_name}"
+            artifactId artifactGroup
+            version =  artifactVersion
+            artifact "${project.buildDir}/outputs/aar/${project.name}-release.aar"
+
+            artifact generateSourcesJar
+
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+                configurations.implementation.allDependencies.withType(ModuleDependency) { ModuleDependency dp ->
+                    if (dp.version != "unspecified") { // 过滤项目内library引用
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', dp.group)
+                        dependencyNode.appendNode('artifactId', dp.name)
+                        dependencyNode.appendNode('version', dp.version)
+
+                        // for exclusions
+                        if (dp.excludeRules.size() > 0) {
+                            def exclusions = dependencyNode.appendNode('exclusions')
+                            dp.excludeRules.each { ExcludeRule ex ->
+                                def exclusion = exclusions.appendNode('exclusion')
+                                exclusion.appendNode('groupId', ex.group)
+                                exclusion.appendNode('artifactId', ex.module)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+artifactory {
+    contextUrl = "${ARTIFACTORY_CONTEXTURL}"
+    publish {
+        repository {
+            // The Artifactory repository key to publish to
+            repoKey = artifactVersion.endsWith('SNAPSHOT') ? 'mg-app-libs-snapshot' : 'mg-app-libs-release'
+            username = "${ARTIFACTORY_USER}" // The publisher user name
+            password = "${ARTIFACTORY_PASSWORD}" // The publisher password
+            maven = true
+        }
+        defaults {
+            publishArtifacts = true
+            publications('aar')
+            publishPom = true //Publish generated POM files to Artifactory (true by default)
+            publishIvy = false //Publish generated Ivy descriptor files to Artifactory (true by default)
+        }
+    }
+    resolve {
+        repository {
+            repoKey = 'jcenter'
+            username = "${ARTIFACTORY_USER}" // The resolver user name
+            password = "${ARTIFACTORY_PASSWORD}" // The resolver password
+        }
+    }
+}

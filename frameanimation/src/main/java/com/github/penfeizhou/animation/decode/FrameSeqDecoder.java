@@ -436,18 +436,15 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
             sampleSizeChanged = true;
             final boolean tempRunning = isRunning();
             workerHandler.removeCallbacks(renderTask);
-            workerHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    innerStop();
-                    try {
-                        initCanvasBounds(read(getReader(mLoader.obtain())));
-                        if (tempRunning) {
-                            innerStart();
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
+            workerHandler.post(() -> {
+                innerStop();
+                try {
+                    initCanvasBounds(read(getReader(mLoader.obtain())));
+                    if (tempRunning) {
+                        innerStart();
                     }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             });
         }
