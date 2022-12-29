@@ -49,11 +49,7 @@ afterEvaluate {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    api("com.github.penfeizhou.android.animation:frameanimation:${rootProject.ext.Version}")
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    testImplementation 'junit:junit:4.13'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    api("com.moorgen.controls:frameanimation:${rootProject.ext.Version}")
 }
 
 //apply from: rootProject.file('scripts/upload.gradle')

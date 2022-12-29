@@ -6,9 +6,12 @@ buildscript {
         kotlinx = "1.6.4"
     }
     repositories {
+        maven { url "http://192.168.50.6:8081/artifactory/mg-app-libs-release/" }
+        maven { url "http://192.168.50.6:8081/artifactory/mg-app-libs-snapshot/" }
         google()
         jcenter()
-
+        mavenCentral()
+        mavenLocal()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:4.2.1'
@@ -19,11 +22,15 @@ buildscript {
 
 allprojects {
     repositories {
+        maven { url "http://192.168.50.6:8081/artifactory/mg-app-libs-release/" }
+        maven { url "http://192.168.50.6:8081/artifactory/mg-app-libs-snapshot/" }
         google()
         jcenter()
         maven {
             url "https://dl.bintray.com/osborn/Android"
         }
+        mavenCentral()
+        mavenLocal()
     }
     def needReplaceLocal = true
     gradle.startParameter.taskNames.each {
