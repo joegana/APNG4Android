@@ -224,7 +224,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
 
     private void initCanvasBounds(Rect rect) {
         fullRect = rect;
-        frameBuffer = ByteBuffer.allocate((rect.width() * rect.height() / (sampleSize * sampleSize) + 1) * 4);
+        frameBuffer = ByteBuffer.allocateDirect((rect.width() * rect.height() / (sampleSize * sampleSize) + 1) * 4);
         if (mWriter == null) {
             mWriter = getWriter();
         }

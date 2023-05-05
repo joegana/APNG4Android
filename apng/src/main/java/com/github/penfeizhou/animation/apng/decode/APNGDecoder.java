@@ -120,8 +120,8 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
                 otherChunks.add(chunk);
             }
         }
-        frameBuffer = ByteBuffer.allocate((canvasWidth * canvasHeight / (sampleSize * sampleSize) + 1) * 4);
-        snapShot.byteBuffer = ByteBuffer.allocate((canvasWidth * canvasHeight / (sampleSize * sampleSize) + 1) * 4);
+        frameBuffer = ByteBuffer.allocateDirect((canvasWidth * canvasHeight / (sampleSize * sampleSize) + 1) * 4);
+        snapShot.byteBuffer = ByteBuffer.allocateDirect((canvasWidth * canvasHeight / (sampleSize * sampleSize) + 1) * 4);
         return new Rect(0, 0, canvasWidth, canvasHeight);
     }
 
