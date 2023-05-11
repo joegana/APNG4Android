@@ -14,11 +14,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.vectordrawable.graphics.drawable.Animatable2Compat;
-
 import android.util.Log;
 
 import com.github.penfeizhou.animation.decode.FrameSeqDecoder;
@@ -30,6 +25,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.vectordrawable.graphics.drawable.Animatable2Compat;
 
 /**
  * @Description: Frame animation drawable
@@ -63,6 +62,7 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder> ex
                         animationCallback.onAnimationEnd(FrameAnimationDrawable.this);
                     }
                     break;
+                }
             }
         }
     };
