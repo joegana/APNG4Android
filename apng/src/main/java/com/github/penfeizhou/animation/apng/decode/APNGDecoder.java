@@ -32,13 +32,13 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
     private final Paint paint = new Paint();
 
 
-    private class SnapShot {
+    private static class SnapShot {
         byte dispose_op;
         Rect dstRect = new Rect();
         ByteBuffer byteBuffer;
     }
 
-    private SnapShot snapShot = new SnapShot();
+    private final SnapShot snapShot = new SnapShot();
 
     /**
      * @param loader         webp的reader
@@ -101,7 +101,7 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
             } else if (chunk instanceof IDATChunk) {
                 if (!actl) {
                     //如果为非APNG图片，则只解码PNG
-                    Frame frame = new StillFrame(reader);
+                    Frame<APNGReader, APNGWriter> frame = new StillFrame(reader);
                     frame.frameWidth = canvasWidth;
                     frame.frameHeight = canvasHeight;
                     frames.add(frame);
@@ -126,7 +126,7 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
     }
 
     @Override
-    protected void renderFrame(Frame frame) {
+    protected void renderFrame(Frame<APNGReader, APNGWriter> frame) {
         if (frame == null || fullRect == null) {
             return;
         }
@@ -198,10 +198,8 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
             frameBuffer.rewind();
             bitmap.copyPixelsToBuffer(frameBuffer);
             recycleBitmap(bitmap);
-        } catch (Exception exception) {
-
-        } catch (Error error) {
-
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

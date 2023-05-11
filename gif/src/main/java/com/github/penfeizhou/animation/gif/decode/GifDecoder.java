@@ -28,10 +28,10 @@ public class GifDecoder extends FrameSeqDecoder<GifReader, GifWriter> {
     private GifWriter mGifWriter = new GifWriter();
     private final Paint paint = new Paint();
     private int bgColor = Color.TRANSPARENT;
-    private SnapShot snapShot = new SnapShot();
+    private final SnapShot snapShot = new SnapShot();
     private int mLoopCount = 0;
 
-    private class SnapShot {
+    private static class SnapShot {
         ByteBuffer byteBuffer;
     }
 
@@ -93,9 +93,9 @@ public class GifDecoder extends FrameSeqDecoder<GifReader, GifWriter> {
                 mLoopCount = ((ApplicationExtension) block).loopCount;
             }
         }
-        frameBuffer = ByteBuffer.allocateDirect((canvasWidth * canvasHeight / (sampleSize * sampleSize) + 1) * 4);
-        snapShot.byteBuffer = ByteBuffer.allocateDirect((canvasWidth * canvasHeight / (sampleSize * sampleSize) + 1) * 4);
-        if (globalColorTable != null && bgColorIndex > 0) {
+        frameBuffer = ByteBuffer.allocate((canvasWidth * canvasHeight / (sampleSize * sampleSize) + 1) * 4);
+        snapShot.byteBuffer = ByteBuffer.allocate((canvasWidth * canvasHeight / (sampleSize * sampleSize) + 1) * 4);
+        if (globalColorTable != null && bgColorIndex >= 0 && bgColorIndex < globalColorTable.getColorTable().length) {
             int abgr = globalColorTable.getColorTable()[bgColorIndex];
             this.bgColor = Color.rgb(abgr & 0xff, (abgr >> 8) & 0xff, (abgr >> 16) & 0xff);
         }
@@ -108,7 +108,7 @@ public class GifDecoder extends FrameSeqDecoder<GifReader, GifWriter> {
     }
 
     @Override
-    protected void renderFrame(Frame frame) {
+    protected void renderFrame(Frame<GifReader, GifWriter> frame) {
         GifFrame gifFrame = (GifFrame) frame;
         Bitmap bitmap = obtainBitmap(fullRect.width() / sampleSize, fullRect.height() / sampleSize);
         Canvas canvas = cachedCanvas.get(bitmap);
@@ -141,6 +141,7 @@ public class GifDecoder extends FrameSeqDecoder<GifReader, GifWriter> {
                     break;
                 case 3:
                     snapShot.byteBuffer.rewind();
+                    canvas.drawColor(bgColor, PorterDuff.Mode.CLEAR);
                     Bitmap preBitmap = obtainBitmap(fullRect.width() / sampleSize, fullRect.height() / sampleSize);
                     preBitmap.copyPixelsFromBuffer(snapShot.byteBuffer);
                     canvas.drawBitmap(preBitmap, 0, 0, paint);

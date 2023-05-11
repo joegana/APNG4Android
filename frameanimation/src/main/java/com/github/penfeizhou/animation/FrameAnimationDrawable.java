@@ -36,8 +36,7 @@ import java.util.Set;
  * @Author: pengfei.zhou
  * @CreateDate: 2019/3/27
  */
-public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder> extends
-    Drawable implements Animatable2Compat, FrameSeqDecoder.RenderListener {
+public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder> extends Drawable implements Animatable2Compat, FrameSeqDecoder.RenderListener {
     private static final String TAG = FrameAnimationDrawable.class.getSimpleName();
     private final Paint paint = new Paint();
     private final Decoder frameSeqDecoder;
@@ -51,13 +50,16 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder> ex
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case MSG_ANIMATION_START:
-                    for (AnimationCallback animationCallback : animationCallbacks) {
+                case MSG_ANIMATION_START: {
+                    ArrayList<AnimationCallback> callbacks = new ArrayList<>(animationCallbacks);
+                    for (AnimationCallback animationCallback : callbacks) {
                         animationCallback.onAnimationStart(FrameAnimationDrawable.this);
                     }
                     break;
-                case MSG_ANIMATION_END:
-                    for (AnimationCallback animationCallback : animationCallbacks) {
+                }
+                case MSG_ANIMATION_END: {
+                    ArrayList<AnimationCallback> callbacks = new ArrayList<>(animationCallbacks);
+                    for (AnimationCallback animationCallback : callbacks) {
                         animationCallback.onAnimationEnd(FrameAnimationDrawable.this);
                     }
                     break;
@@ -312,7 +314,8 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder> ex
         List<WeakReference<Callback>> lost = new ArrayList<>();
         Callback callback = getCallback();
         boolean recorded = false;
-        for (WeakReference<Callback> ref : obtainedCallbacks) {
+        Set<WeakReference<Callback>> temp = new HashSet<>(obtainedCallbacks);
+        for (WeakReference<Callback> ref : temp) {
             Callback cb = ref.get();
             if (cb == null) {
                 lost.add(ref);
@@ -335,11 +338,16 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder> ex
     @Override
     public void invalidateSelf() {
         super.invalidateSelf();
-        for (WeakReference<Callback> ref : obtainedCallbacks) {
+        Set<WeakReference<Callback>> temp = new HashSet<>(obtainedCallbacks);
+        for (WeakReference<Callback> ref : temp) {
             Callback callback = ref.get();
             if (callback != null && callback != getCallback()) {
                 callback.invalidateDrawable(this);
             }
         }
+    }
+
+    public Decoder getFrameSeqDecoder() {
+        return frameSeqDecoder;
     }
 }
