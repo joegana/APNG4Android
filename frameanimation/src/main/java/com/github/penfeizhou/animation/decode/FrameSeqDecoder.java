@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.LockSupport;
 
 /**
  * @Description: Abstract Frame Animation Decoder
@@ -199,8 +199,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
             if (mState == State.FINISHING) {
                 Log.e(TAG, "In finishing,do not interrupt");
             }
-            final Thread thread = Thread.currentThread();
-            workerHandler.post(() -> {
+            FutureTask<Rect> task = new FutureTask<>(() -> {
                 try {
                     if (fullRect == null) {
                         if (mReader == null) {
@@ -213,11 +212,15 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
                 } catch (Exception e) {
                     e.printStackTrace();
                     fullRect = RECT_EMPTY;
-                } finally {
-                    LockSupport.unpark(thread);
                 }
+                return fullRect;
             });
-            LockSupport.park(thread);
+            workerHandler.post(task);
+            try {
+                task.get();
+            }catch (Exception e){
+                //ignore any exception !
+            }
         }
         return fullRect == null ? RECT_EMPTY : fullRect;
     }
