@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 
+import com.github.penfeizhou.animation.apng.Perf;
 import com.github.penfeizhou.animation.apng.io.APNGReader;
 import com.github.penfeizhou.animation.apng.io.APNGWriter;
 import com.github.penfeizhou.animation.decode.Frame;
@@ -75,6 +76,7 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
 
     @Override
     protected Rect read(APNGReader reader) throws IOException {
+        Perf.perfBegin("Apng Read");
         List<Chunk> chunks = APNGParser.parse(reader);
         List<Chunk> otherChunks = new ArrayList<>();
 
@@ -118,8 +120,8 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
                 otherChunks.add(chunk);
             }
         }
-        frameBuffer = ByteBuffer.allocate((canvasWidth * canvasHeight / (sampleSize * sampleSize) + 1) * 4);
-        snapShot.byteBuffer = ByteBuffer.allocate((canvasWidth * canvasHeight / (sampleSize * sampleSize) + 1) * 4);
+        frameBuffer = ByteBuffer.allocateDirect((canvasWidth * canvasHeight / (sampleSize * sampleSize) + 1) * 4);
+        snapShot.byteBuffer = ByteBuffer.allocateDirect((canvasWidth * canvasHeight / (sampleSize * sampleSize) + 1) * 4);
         return new Rect(0, 0, canvasWidth, canvasHeight);
     }
 

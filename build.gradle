@@ -1,25 +1,36 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.3.72'
+    ext{
+        kotlin = '1.6.10'
+        kotlinx = "1.6.4"
+    }
     repositories {
+        maven { url "http://192.168.50.6:8081/artifactory/mg-app-libs-release/" }
+        maven { url "http://192.168.50.6:8081/artifactory/mg-app-libs-snapshot/" }
         google()
         jcenter()
-
+        mavenCentral()
+        mavenLocal()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.android.tools.build:gradle:4.2.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin"
+        classpath 'org.jfrog.buildinfo:build-info-extractor-gradle:4.29.2'
     }
 }
 
 allprojects {
     repositories {
+        maven { url "http://192.168.50.6:8081/artifactory/mg-app-libs-release/" }
+        maven { url "http://192.168.50.6:8081/artifactory/mg-app-libs-snapshot/" }
         google()
         jcenter()
         maven {
             url "https://dl.bintray.com/osborn/Android"
         }
+        mavenCentral()
+        mavenLocal()
     }
     def needReplaceLocal = true
     gradle.startParameter.taskNames.each {
@@ -79,4 +90,13 @@ task publishGlidePlugin dependsOn(publishAPNG, publishAWebP, publishGif, ":plugi
 
 task PublishAll dependsOn(publishGlidePlugin, publishAWebPEncoder) {
     println "All published"
+}
+
+
+ext {
+    build_tool_version = '33.0.1'
+    build_sdk_version = 33
+    target_api_level = 33
+    min_api_level = 16
+    appcompat = '1.3.0'
 }
