@@ -76,7 +76,7 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
 
     @Override
     protected Rect read(APNGReader reader) throws IOException {
-        Perf.perfBegin("Apng Read");
+//        Perf.perfBegin("Apng Read");
         List<Chunk> chunks = APNGParser.parse(reader);
         List<Chunk> otherChunks = new ArrayList<>();
 
@@ -120,8 +120,13 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
                 otherChunks.add(chunk);
             }
         }
+        boolean gc = frameBuffer != null ;
         frameBuffer = ByteBuffer.allocateDirect((canvasWidth * canvasHeight / (sampleSize * sampleSize) + 1) * 4);
         snapShot.byteBuffer = ByteBuffer.allocateDirect((canvasWidth * canvasHeight / (sampleSize * sampleSize) + 1) * 4);
+        if(gc){
+            Runtime.getRuntime().gc();
+        }
+//        Perf.perfEnd("Apng Read");
         return new Rect(0, 0, canvasWidth, canvasHeight);
     }
 
@@ -130,6 +135,7 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
         if (frame == null || fullRect == null) {
             return;
         }
+//        Perf.perfBegin("renderFrame");
         try {
             Bitmap bitmap = obtainBitmap(fullRect.width() / sampleSize, fullRect.height() / sampleSize);
             Canvas canvas = cachedCanvas.get(bitmap);
@@ -198,6 +204,7 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
             frameBuffer.rewind();
             bitmap.copyPixelsToBuffer(frameBuffer);
             recycleBitmap(bitmap);
+//            Perf.perfEnd("renderFrame");
         } catch (Exception e) {
             e.printStackTrace();
         }
