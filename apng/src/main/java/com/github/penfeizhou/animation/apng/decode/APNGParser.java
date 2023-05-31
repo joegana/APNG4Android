@@ -106,7 +106,7 @@ public class APNGParser {
         List<Chunk> chunks = new ArrayList<>();
         while (reader.available() > 0) {
             chunks.add(parseChunk(reader));
-        }
+    }
         return chunks;
     }
 
