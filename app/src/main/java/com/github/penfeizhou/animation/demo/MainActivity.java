@@ -40,8 +40,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Intent intent = new Intent(this, AnimationTestActivity.class);
                 intent.putExtra("files", new String[]{
 //                        "world-cup.png",
-                        "wheel.png",
-                        "voice_card.png",
+//                        "apng/wheel.png",
+                        "apng/voice_card.png",
                         "voice_card1.png",
 //                        "start.png",
 //                        "apng_detail_guide.png",

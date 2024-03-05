@@ -52,8 +52,8 @@ afterEvaluate {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-//    api("com.moorgen.controls:frameanimation:${rootProject.ext.Version}")
-    api project(":frameanimation")
+    api("com.moorgen.controls:frameanimation:${rootProject.ext.Version}")
+//    api project(":frameanimation")
 }
 
 //apply from: rootProject.file('scripts/upload.gradle')

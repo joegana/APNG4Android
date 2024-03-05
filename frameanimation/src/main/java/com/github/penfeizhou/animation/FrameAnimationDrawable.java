@@ -341,7 +341,7 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder> ex
         Set<WeakReference<Callback>> temp = new HashSet<>(obtainedCallbacks);
         for (WeakReference<Callback> ref : temp) {
             Callback callback = ref.get();
-            if (callback != null && callback != getCallback()) {
+            if (callback != null) {
                 callback.invalidateDrawable(this);
             }
         }
@@ -349,5 +349,13 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder> ex
 
     public Decoder getFrameSeqDecoder() {
         return frameSeqDecoder;
+    }
+
+    /**
+     * 获取当前正在显示的Bitmap
+     * @return
+     */
+    public Bitmap getCurrentFrame(){
+        return bitmap;
     }
 }

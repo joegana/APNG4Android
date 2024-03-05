@@ -45,4 +45,5 @@ public class APNGDrawable extends FrameAnimationDrawable<APNGDecoder> {
         ResourceStreamLoader resourceStreamLoader = new ResourceStreamLoader(context, resId);
         return new APNGDrawable(resourceStreamLoader);
     }
+
 }
