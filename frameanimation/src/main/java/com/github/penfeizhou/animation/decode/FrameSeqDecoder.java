@@ -7,15 +7,13 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
-
 import com.github.penfeizhou.animation.executor.FrameDecoderExecutor;
+import com.github.penfeizhou.animation.frame.BuildConfig;
 import com.github.penfeizhou.animation.io.Reader;
 import com.github.penfeizhou.animation.io.Writer;
 import com.github.penfeizhou.animation.loader.Loader;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -49,9 +47,6 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
     private final Runnable renderTask = new Runnable() {
         @Override
         public void run() {
-            if (DEBUG) {
-                Log.d(TAG, renderTask + ",run");
-            }
             if (paused.get()) {
                 return;
             }
@@ -78,7 +73,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
     protected volatile Rect fullRect;
     private W mWriter = getWriter();
     private R mReader = null;
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = BuildConfig.DEBUG;
     /**
      * If played all the needed
      */
@@ -195,7 +190,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
 
     public void stopIfNeeded() {
         this.workerHandler.post(() -> {
-            if (renderListeners.size() == 0) {
+            if (renderListeners.isEmpty()) {
                 stop();
             }
         });
@@ -217,8 +212,8 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
                         initCanvasBounds(read(mReader));
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    fullRect = RECT_EMPTY;
+                      Log.e(TAG,"getBounds error:"+e);
+                     fullRect = RECT_EMPTY;
                 }
                 return fullRect;
             });
@@ -226,7 +221,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
             try {
                 task.get();
             }catch (Exception e){
-                //ignore any exception !
+                Log.e(TAG,"getBounds/get error:"+e);
             }
         }
         return fullRect == null ? RECT_EMPTY : fullRect;
@@ -268,7 +263,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
         if (Looper.myLooper() == workerHandler.getLooper()) {
             innerStart();
         } else {
-            workerHandler.post(() -> innerStart());
+            workerHandler.post(this::innerStart);
         }
     }
 
@@ -278,7 +273,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
 
         final long start = System.currentTimeMillis();
         try {
-            if (frames.size() == 0) {
+            if (frames.isEmpty()) {
                 try {
                     if (mReader == null) {
                         mReader = getReader(mLoader.obtain());
@@ -287,7 +282,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
                     }
                     initCanvasBounds(read(mReader));
                 } catch (Throwable e) {
-                    e.printStackTrace();
+                    Log.e(TAG, e.toString());
                 }
             }
         } finally {
@@ -307,7 +302,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
 
     @WorkerThread
     private void innerStop() {
-        workerHandler.removeCallbacks(renderTask);
+        workerHandler.removeCallbacksAndMessages(null);
         frames.clear();
         synchronized (cacheBitmapsLock) {
             for (Bitmap bitmap : cacheBitmaps) {
@@ -330,7 +325,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
                 mWriter.close();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.toString());
         }
         release();
         if (DEBUG) {
@@ -360,7 +355,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
         if (Looper.myLooper() == workerHandler.getLooper()) {
             innerStop();
         } else {
-            workerHandler.post(() -> innerStop());
+            workerHandler.post(this::innerStop);
         }
     }
 
@@ -505,7 +500,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
         }
         mState = State.RUNNING;
         paused.compareAndSet(true, false);
-        if (frames.size() == 0) {
+        if (frames.isEmpty()) {
             if (mReader == null) {
                 mReader = getReader(mLoader.obtain());
             } else {

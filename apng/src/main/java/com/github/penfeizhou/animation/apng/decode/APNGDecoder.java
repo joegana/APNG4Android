@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
-
 import com.github.penfeizhou.animation.apng.Perf;
 import com.github.penfeizhou.animation.apng.io.APNGReader;
 import com.github.penfeizhou.animation.apng.io.APNGWriter;
@@ -14,7 +13,6 @@ import com.github.penfeizhou.animation.decode.Frame;
 import com.github.penfeizhou.animation.decode.FrameSeqDecoder;
 import com.github.penfeizhou.animation.io.Reader;
 import com.github.penfeizhou.animation.loader.Loader;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -76,7 +74,9 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
 
     @Override
     protected Rect read(APNGReader reader) throws IOException {
-//        Perf.perfBegin("Apng Read");
+        if(DEBUG) {
+            Perf.perfBegin("Apng Read");
+        }
         List<Chunk> chunks = APNGParser.parse(reader);
         List<Chunk> otherChunks = new ArrayList<>();
 
@@ -120,13 +120,15 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
                 otherChunks.add(chunk);
             }
         }
-        boolean gc = frameBuffer != null ;
+//        boolean gc = frameBuffer != null ;
         frameBuffer = ByteBuffer.allocateDirect((canvasWidth * canvasHeight / (sampleSize * sampleSize) + 1) * 4);
         snapShot.byteBuffer = ByteBuffer.allocateDirect((canvasWidth * canvasHeight / (sampleSize * sampleSize) + 1) * 4);
-        if(gc){
-            Runtime.getRuntime().gc();
+//        if(gc){
+//            Runtime.getRuntime().gc();
+//        }
+        if(DEBUG) {
+            Perf.perfEnd("Apng Read");
         }
-//        Perf.perfEnd("Apng Read");
         return new Rect(0, 0, canvasWidth, canvasHeight);
     }
 

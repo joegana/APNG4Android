@@ -48,12 +48,12 @@ public class ByteBufferWriter implements Writer {
     @Override
     public void reset(int size) {
         if (byteBuffer == null || size > byteBuffer.capacity()) {
-            boolean gc = byteBuffer != null ;
+//            boolean gc = byteBuffer != null ;
             byteBuffer = ByteBuffer.allocate(size);
             this.byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-            if(gc){
-                Runtime.getRuntime().gc();
-            }
+//            if(gc){
+//                Runtime.getRuntime().gc();
+//            }
         }
         byteBuffer.clear();
     }

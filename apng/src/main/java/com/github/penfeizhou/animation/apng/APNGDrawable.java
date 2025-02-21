@@ -2,7 +2,6 @@ package com.github.penfeizhou.animation.apng;
 
 
 import android.content.Context;
-
 import com.github.penfeizhou.animation.FrameAnimationDrawable;
 import com.github.penfeizhou.animation.apng.decode.APNGDecoder;
 import com.github.penfeizhou.animation.decode.FrameSeqDecoder;

@@ -2,6 +2,7 @@ package com.github.penfeizhou.animation.executor;
 
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,9 +13,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @CreateDate: 2019-11-21
  */
 public class FrameDecoderExecutor {
+    private final String TAG = "FrameDecoderExecutor" ;
     private static int sPoolNumber = 4;
-    private ArrayList<HandlerThread> mHandlerThreadGroup = new ArrayList<>();
-    private AtomicInteger counter = new AtomicInteger(0);
+    private final ArrayList<HandlerThread> mHandlerThreadGroup = new ArrayList<>();
+    private final AtomicInteger counter = new AtomicInteger(0);
 
     private FrameDecoderExecutor() {
     }
@@ -42,6 +44,7 @@ public class FrameDecoderExecutor {
             if (looper != null) {
                 return looper;
             } else {
+                Log.w(TAG,"1:get main looper as work thread looper!");
                 return Looper.getMainLooper();
             }
         } else {
@@ -50,9 +53,11 @@ public class FrameDecoderExecutor {
                 if (looper != null) {
                     return looper;
                 } else {
+                    Log.w(TAG,"2:get main looper as work thread looper!");
                     return Looper.getMainLooper();
                 }
             } else {
+                Log.w(TAG,"3:get main looper as work thread looper!");
                 return Looper.getMainLooper();
             }
         }

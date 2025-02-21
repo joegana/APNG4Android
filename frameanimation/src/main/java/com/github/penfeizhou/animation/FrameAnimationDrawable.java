@@ -15,17 +15,14 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
-
 import com.github.penfeizhou.animation.decode.FrameSeqDecoder;
 import com.github.penfeizhou.animation.loader.Loader;
-
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.vectordrawable.graphics.drawable.Animatable2Compat;
@@ -35,7 +32,8 @@ import androidx.vectordrawable.graphics.drawable.Animatable2Compat;
  * @Author: pengfei.zhou
  * @CreateDate: 2019/3/27
  */
-public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder> extends Drawable implements Animatable2Compat, FrameSeqDecoder.RenderListener {
+public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
+        extends Drawable implements Animatable2Compat, FrameSeqDecoder.RenderListener {
     private static final String TAG = FrameAnimationDrawable.class.getSimpleName();
     private final Paint paint = new Paint();
     private final Decoder frameSeqDecoder;
@@ -61,12 +59,13 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder> ex
                     for (AnimationCallback animationCallback : callbacks) {
                         animationCallback.onAnimationEnd(FrameAnimationDrawable.this);
                     }
+                    this.removeCallbacksAndMessages(null);
                     break;
                 }
             }
         }
     };
-    private final Runnable invalidateRunnable = () -> invalidateSelf();
+    private final Runnable invalidateRunnable = this::invalidateSelf;
     private boolean autoPlay = true;
 
     private final Set<WeakReference<Callback>> obtainedCallbacks = new HashSet<>();
@@ -93,8 +92,8 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder> ex
 
     protected abstract Decoder createFrameSeqDecoder(Loader streamLoader, FrameSeqDecoder.RenderListener listener);
 
-    /**
-     * @param loopLimit <=0为无限播放,>0为实际播放次数
+     /**
+     * @param loopLimit 小于等于0为无限播放,  大于0为实际播放次数
      */
     public void setLoopLimit(int loopLimit) {
         frameSeqDecoder.setLoopLimit(loopLimit);
@@ -130,7 +129,7 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder> ex
 
     private void innerStart() {
         if (FrameSeqDecoder.DEBUG) {
-            Log.d(TAG, this.toString() + ",start");
+            Log.d(TAG, this + ",start");
         }
 
         this.frameSeqDecoder.addRenderListener(this);
@@ -150,7 +149,7 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder> ex
 
     private void innerStop() {
         if (FrameSeqDecoder.DEBUG) {
-            Log.d(TAG, this.toString() + ",stop");
+            Log.d(TAG, this + ",stop");
         }
 
         this.frameSeqDecoder.removeRenderListener(this);

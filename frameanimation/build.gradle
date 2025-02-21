@@ -54,5 +54,8 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 }
+
+
+
 //apply from: rootProject.file('scripts/upload.gradle')
 apply from: '../local-maven.gradle'
