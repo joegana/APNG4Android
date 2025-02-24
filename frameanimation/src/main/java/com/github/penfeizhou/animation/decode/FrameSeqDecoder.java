@@ -6,6 +6,7 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Trace;
 import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
@@ -51,13 +52,16 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
                 return;
             }
             if (canStep()) {
+                Trace.beginSection("renderTask:"+Thread.currentThread().getName());
                 long start = System.currentTimeMillis();
                 long delay = step();
                 long cost = System.currentTimeMillis() - start;
                 workerHandler.postDelayed(this, Math.max(0, delay - cost));
-                for (RenderListener renderListener : renderListeners) {
+                Set<RenderListener> renders = new HashSet<>(renderListeners);
+                for (RenderListener renderListener : renders) {
                     renderListener.onRender(frameBuffer);
                 }
+                Trace.endSection();
             } else {
                 stop();
             }
@@ -181,19 +185,17 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
 
 
     public void addRenderListener(final RenderListener renderListener) {
-        this.workerHandler.post(() -> renderListeners.add(renderListener));
+         renderListeners.add(renderListener);
     }
 
     public void removeRenderListener(final RenderListener renderListener) {
-        this.workerHandler.post(() -> renderListeners.remove(renderListener));
+         renderListeners.remove(renderListener);
     }
 
     public void stopIfNeeded() {
-        this.workerHandler.post(() -> {
-            if (renderListeners.isEmpty()) {
-                stop();
-            }
-        });
+        if (renderListeners.isEmpty()) {
+            stop();
+        }
     }
 
     public Rect getBounds() {
@@ -381,11 +383,9 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
     }
 
     public void reset() {
-        workerHandler.post(() -> {
-            playCount = 0;
-            frameIndex = -1;
-            finished = false;
-        });
+        playCount = 0;
+        frameIndex = -1;
+        finished = false;
     }
 
     public void pause() {
@@ -449,7 +449,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
         if (!isRunning()) {
             return false;
         }
-        if (frames.size() == 0) {
+        if (frames.isEmpty()) {
             return false;
         }
         if (getNumPlays() <= 0) {

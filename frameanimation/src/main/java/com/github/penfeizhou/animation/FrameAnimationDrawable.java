@@ -166,7 +166,7 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
     }
 
     @Override
-    public void draw(Canvas canvas) {
+    public void draw(@NonNull Canvas canvas) {
         if (bitmap == null || bitmap.isRecycled()) {
             return;
         }
@@ -226,7 +226,8 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
             return;
         }
         this.bitmap.copyPixelsFromBuffer(byteBuffer);
-        uiHandler.post(invalidateRunnable);
+
+        Message.obtain(uiHandler,invalidateRunnable).sendToTarget();
     }
 
     @Override
