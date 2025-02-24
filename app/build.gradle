@@ -12,7 +12,7 @@ android {
     compileSdkVersion 33
     defaultConfig {
         applicationId "com.github.penfeizhou.animation.demo"
-        minSdkVersion 16
+        minSdkVersion 18
         targetSdkVersion 33
         versionCode 1
         versionName "1.0"
