@@ -36,6 +36,7 @@ dependencies {
     implementation("com.moorgen.controls:frameanimation:${rootProject.ext.Version}")
 //    implementation project(":frameanimation")
     implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation "androidx.vectordrawable:vectordrawable-animated:1.1.0"
 
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'

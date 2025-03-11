@@ -3,6 +3,7 @@ package com.github.penfeizhou.animation.decode;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -35,7 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
     private static final String TAG = FrameSeqDecoder.class.getSimpleName();
     private final int taskId;
-
+    private static final Rect RECT_EMPTY = new Rect();
     private final Loader mLoader;
     private final Handler workerHandler;
     protected List<Frame<R, W>> frames = new ArrayList<>();
@@ -44,7 +46,6 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
     private Integer loopLimit = null;
     private final Set<RenderListener> renderListeners = new HashSet<>();
     private final AtomicBoolean paused = new AtomicBoolean(true);
-    private static final Rect RECT_EMPTY = new Rect();
     private final Runnable renderTask = new Runnable() {
         @Override
         public void run() {
@@ -205,6 +206,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
             }
             FutureTask<Rect> task = new FutureTask<>(() -> {
                 try {
+                    long start = System.currentTimeMillis();
                     if (fullRect == null) {
                         if (mReader == null) {
                             mReader = getReader(mLoader.obtain());
@@ -213,13 +215,16 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
                         }
                         initCanvasBounds(read(mReader));
                     }
+                    long timeUsed = System.currentTimeMillis() - start;
+                    Log.i(TAG,String.format(Locale.CHINESE,"getBounds time used:%d ms",timeUsed));
                 } catch (Exception e) {
                       Log.e(TAG,"getBounds error:"+e);
                      fullRect = RECT_EMPTY;
                 }
                 return fullRect;
             });
-            workerHandler.post(task);
+            AsyncTask.execute(task);
+//            workerHandler.post(task);
             try {
                 task.get();
             }catch (Exception e){
@@ -235,6 +240,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
         if (mWriter == null) {
             mWriter = getWriter();
         }
+        Log.d(TAG,String.format(Locale.CHINESE,"initCanvasBounds:%s",fullRect.toString()));
     }
 
 
@@ -547,5 +553,9 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
             }
             return size;
         }
+    }
+
+    public Rect getEmptyRect(){
+        return  RECT_EMPTY;
     }
 }

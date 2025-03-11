@@ -60,7 +60,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.tv_3: {
                 Intent intent = new Intent(this, AnimationTestActivity.class);
                 intent.putExtra("files", new String[]{
-                        "world-cup.webp",
+                    "world-cup.webp",
+                    "awebp/main_bottom_favorite_d.webp",
+                    "awebp/main_bottom_habit_d.webp",
+                    "awebp/main_bottom_my_d.webp",
+                    "awebp/main_bottom_room_d.webp",
+                    "awebp/main_bottom_favorite.webp",
+                    "awebp/main_bottom_habit.webp",
+                    "awebp/main_bottom_my.webp",
+                    "awebp/main_bottom_room.webp",
                 });
                 startActivity(intent);
             }
@@ -69,6 +77,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Intent intent = new Intent(this, AnimationTestActivity.class);
                 intent.putExtra("files", new String[]{
                         "lossless.webp",
+                         "webp/bottom_favourit_pe_l.png",
+                         "webp/bottom_me_p_l.png",
+                         "webp/bottom_rome_p_l.png",
+                         "webp/bottom_unfavourite_l.png",
+                         "webp/bottom_unme_l.png",
+                         "webp/bottom_unroom_l.png",
+                         "webp/hapit_main_n_l.png",
+                         "webp/hapit_main_s_l.png",
                 });
                 startActivity(intent);
             }

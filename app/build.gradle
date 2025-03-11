@@ -39,15 +39,26 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation project(':frameanimation')
-    implementation project(':plugin_glide')
-    implementation project(':awebp')
-    implementation project(':apng')
-    implementation project(':gif')
-    implementation project(':awebpencoder')
+    implementation "androidx.vectordrawable:vectordrawable-animated:1.1.0"
+
+    implementation("com.moorgen.controls:frameanimation:${rootProject.ext.Version}")
+    implementation("com.moorgen.controls:awebp:${rootProject.ext.Version}")
+    implementation("com.moorgen.controls:apng:${rootProject.ext.Version}")
+    implementation("com.moorgen.controls:gif:${rootProject.ext.Version}")
+    implementation("com.moorgen.controls:awebpencoder:${rootProject.ext.Version}")
+    implementation("com.moorgen.controls:plugin_glide:${rootProject.ext.Version}")
+
+//    implementation project(':frameanimation')
+//    implementation project(':plugin_glide')
+//    implementation project(':awebp')
+//    implementation project(':apng')
+//    implementation project(':gif')
+//    implementation project(':awebpencoder')
+
+
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.3'
+//    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.3'
 
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'

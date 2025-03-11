@@ -240,7 +240,7 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
         hookRecordCallbacks();
         if (this.autoPlay) {
             if (FrameSeqDecoder.DEBUG) {
-                Log.d(TAG, this.toString() + ",visible:" + visible + ",restart:" + restart);
+                Log.d(TAG, this + ",visible:" + visible + ",restart:" + restart);
             }
             if (visible) {
                 if (!isRunning()) {

@@ -37,9 +37,14 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
 //    api("com.github.penfeizhou.android.animation:awebp:${rootProject.ext.Version}")
 //    api("com.github.penfeizhou.android.animation:gif:${rootProject.ext.Version}")
-    implementation project(":frameanimation")
-    implementation project(":gif")
-    implementation project(":awebp")
+
+    implementation("com.moorgen.controls:frameanimation:${rootProject.ext.Version}")
+    implementation("com.moorgen.controls:awebp:${rootProject.ext.Version}")
+    implementation("com.moorgen.controls:gif:${rootProject.ext.Version}")
+
+//    implementation project(":frameanimation")
+//    implementation project(":gif")
+//    implementation project(":awebp")
 
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'

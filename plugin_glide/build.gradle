@@ -1,5 +1,12 @@
 apply plugin: 'com.android.library'
 
+ext{
+    package_name = 'com.moorgen.controls'
+    artifactVersion = "${Version}"//release git包发布的版本
+    artifactGroup = "plugin_glide"
+    artifactFilePath  = "${project.buildDir}/outputs/aar/${project.name}-" +
+            "${(artifactVersion.endsWith('SNAPSHOT') || artifactVersion.endsWith('snapshot'))?'debug':'release'}.aar"
+}
 android {
     compileSdkVersion 28
 
@@ -33,14 +40,36 @@ dependencies {
 //    api("com.github.penfeizhou.android.animation:apng:${rootProject.ext.Version}")
 //    api("com.github.penfeizhou.android.animation:gif:${rootProject.ext.Version}")
 
-    implementation project(":frameanimation")
-    implementation project(":awebp")
-    implementation project(":apng")
-    implementation project(":gif")
+    implementation("com.moorgen.controls:frameanimation:${rootProject.ext.Version}")
+    implementation("com.moorgen.controls:awebp:${rootProject.ext.Version}")
+    implementation("com.moorgen.controls:apng:${rootProject.ext.Version}")
+    implementation("com.moorgen.controls:gif:${rootProject.ext.Version}")
+
+//    implementation project(":frameanimation")
+//    implementation project(":awebp")
+//    implementation project(":apng")
+//    implementation project(":gif")
 
 
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 }
-apply from: rootProject.file('scripts/upload.gradle')
+
+task generateSourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier 'sources'
+}
+
+afterEvaluate {
+    if(!artifactVersion.endsWith('SNAPSHOT') && !artifactVersion.endsWith('snapshot')){
+        tasks.matching {
+            (it.name.endsWith('artifactoryPublish'))
+        }.each { tk ->
+            tk.dependsOn('assembleRelease', 'generateSourcesJar')
+        }
+    }
+}
+
+//apply from: rootProject.file('scripts/upload.gradle')
+apply from: '../local-maven.gradle'
