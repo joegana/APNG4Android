@@ -18,12 +18,12 @@ import com.github.penfeizhou.animation.webp.decode.WebPDecoder;
  */
 public class WebPDrawable extends FrameAnimationDrawable<WebPDecoder> {
 
-    public WebPDrawable(Loader provider) {
-        super(provider);
+    public WebPDrawable(Context context,Loader provider) {
+        super(context,provider);
     }
 
-    public WebPDrawable(WebPDecoder decoder) {
-        super(decoder);
+    public WebPDrawable(Context context,WebPDecoder decoder) {
+        super(context,decoder);
     }
 
     @Override
@@ -33,16 +33,16 @@ public class WebPDrawable extends FrameAnimationDrawable<WebPDecoder> {
 
     public static WebPDrawable fromAsset(Context context, String assetPath) {
         AssetStreamLoader assetStreamLoader = new AssetStreamLoader(context, assetPath);
-        return new WebPDrawable(assetStreamLoader);
+        return new WebPDrawable(context,assetStreamLoader);
     }
 
-    public static WebPDrawable fromFile(String filePath) {
+    public static WebPDrawable fromFile(Context context,String filePath) {
         FileLoader fileLoader = new FileLoader(filePath);
-        return new WebPDrawable(fileLoader);
+        return new WebPDrawable(context,fileLoader);
     }
 
     public static WebPDrawable fromResource(Context context, int resId) {
         ResourceStreamLoader resourceStreamLoader = new ResourceStreamLoader(context, resId);
-        return new WebPDrawable(resourceStreamLoader);
+        return new WebPDrawable(context,resourceStreamLoader);
     }
 }

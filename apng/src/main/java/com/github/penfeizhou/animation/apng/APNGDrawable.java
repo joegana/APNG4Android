@@ -16,12 +16,12 @@ import com.github.penfeizhou.animation.loader.ResourceStreamLoader;
  * @CreateDate: 2019/3/27
  */
 public class APNGDrawable extends FrameAnimationDrawable<APNGDecoder> {
-    public APNGDrawable(Loader provider) {
-        super(provider);
+    public APNGDrawable(Context context,Loader provider) {
+        super(context,provider);
     }
 
-    public APNGDrawable(APNGDecoder decoder) {
-        super(decoder);
+    public APNGDrawable(Context context,APNGDecoder decoder) {
+        super(context,decoder);
     }
 
     @Override
@@ -32,17 +32,17 @@ public class APNGDrawable extends FrameAnimationDrawable<APNGDecoder> {
 
     public static APNGDrawable fromAsset(Context context, String assetPath) {
         AssetStreamLoader assetStreamLoader = new AssetStreamLoader(context, assetPath);
-        return new APNGDrawable(assetStreamLoader);
+        return new APNGDrawable(context,assetStreamLoader);
     }
 
-    public static APNGDrawable fromFile(String filePath) {
+    public static APNGDrawable fromFile(Context context,String filePath) {
         FileLoader fileLoader = new FileLoader(filePath);
-        return new APNGDrawable(fileLoader);
+        return new APNGDrawable(context,fileLoader);
     }
 
     public static APNGDrawable fromResource(Context context, int resId) {
         ResourceStreamLoader resourceStreamLoader = new ResourceStreamLoader(context, resId);
-        return new APNGDrawable(resourceStreamLoader);
+        return new APNGDrawable(context,resourceStreamLoader);
     }
 
 }

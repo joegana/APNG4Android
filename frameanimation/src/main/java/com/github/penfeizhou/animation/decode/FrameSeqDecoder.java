@@ -134,9 +134,9 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
                 Bitmap.Config config = Bitmap.Config.ARGB_8888;
                 ret = Bitmap.createBitmap(width, height, config);
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(TAG,"obtainBitmap:"+e);
             } catch (OutOfMemoryError e) {
-                e.printStackTrace();
+                Log.e(TAG,"obtainBitmap:"+e);
             }
             return ret;
         }
@@ -223,8 +223,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
                 }
                 return fullRect;
             });
-            AsyncTask.execute(task);
-//            workerHandler.post(task);
+            workerHandler.postAtFrontOfQueue(task);
             try {
                 task.get();
             }catch (Exception e){
@@ -426,7 +425,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
                         innerStart();
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.e(TAG,"setDesiredSize:"+e);
                 }
             });
         }

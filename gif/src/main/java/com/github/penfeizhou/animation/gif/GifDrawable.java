@@ -16,12 +16,12 @@ import com.github.penfeizhou.animation.loader.ResourceStreamLoader;
  * @CreateDate: 2019-05-16
  */
 public class GifDrawable extends FrameAnimationDrawable<GifDecoder> {
-    public GifDrawable(Loader provider) {
-        super(provider);
+    public GifDrawable(Context context,Loader provider) {
+        super(context,provider);
     }
 
-    public GifDrawable(GifDecoder decoder) {
-        super(decoder);
+    public GifDrawable(Context context,GifDecoder decoder) {
+        super(context,decoder);
     }
 
     @Override
@@ -32,16 +32,16 @@ public class GifDrawable extends FrameAnimationDrawable<GifDecoder> {
 
     public static GifDrawable fromAsset(Context context, String assetPath) {
         AssetStreamLoader assetStreamLoader = new AssetStreamLoader(context, assetPath);
-        return new GifDrawable(assetStreamLoader);
+        return new GifDrawable(context,assetStreamLoader);
     }
 
-    public static GifDrawable fromFile(String filePath) {
+    public static GifDrawable fromFile(Context context,String filePath) {
         FileLoader fileLoader = new FileLoader(filePath);
-        return new GifDrawable(fileLoader);
+        return new GifDrawable(context,fileLoader);
     }
 
     public static GifDrawable fromResource(Context context, int resId) {
         ResourceStreamLoader resourceStreamLoader = new ResourceStreamLoader(context, resId);
-        return new GifDrawable(resourceStreamLoader);
+        return new GifDrawable(context,resourceStreamLoader);
     }
 }

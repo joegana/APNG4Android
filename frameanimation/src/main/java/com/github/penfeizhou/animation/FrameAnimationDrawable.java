@@ -1,5 +1,6 @@
 package com.github.penfeizhou.animation;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -37,6 +38,7 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
     private static final String TAG = FrameAnimationDrawable.class.getSimpleName();
     private final Paint paint = new Paint();
     private final Decoder frameSeqDecoder;
+    private Context context;
     private final DrawFilter drawFilter = new PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private final Matrix matrix = new Matrix();
     private final Set<AnimationCallback> animationCallbacks = new HashSet<>();
@@ -72,12 +74,14 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
 
     private boolean noMeasure = false;
 
-    public FrameAnimationDrawable(Decoder frameSeqDecoder) {
+    public FrameAnimationDrawable(@NonNull Context context,@NonNull  Decoder frameSeqDecoder) {
+        this.context = context;
         paint.setAntiAlias(true);
         this.frameSeqDecoder = frameSeqDecoder;
     }
 
-    public FrameAnimationDrawable(Loader provider) {
+    public FrameAnimationDrawable(@NonNull Context context,@NonNull Loader provider) {
+        this.context = context;
         paint.setAntiAlias(true);
         this.frameSeqDecoder = createFrameSeqDecoder(provider, this);
     }
@@ -184,6 +188,7 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
 
         if (sampleSizeChanged)
             this.bitmap = Bitmap.createBitmap(
+                    context.getResources().getDisplayMetrics(),
                     frameSeqDecoder.getBounds().width() / frameSeqDecoder.getSampleSize(),
                     frameSeqDecoder.getBounds().height() / frameSeqDecoder.getSampleSize(),
                     Bitmap.Config.ARGB_8888);
@@ -216,6 +221,7 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
         }
         if (this.bitmap == null || this.bitmap.isRecycled()) {
             this.bitmap = Bitmap.createBitmap(
+                            context.getResources().getDisplayMetrics(),
                     frameSeqDecoder.getBounds().width() / frameSeqDecoder.getSampleSize(),
                     frameSeqDecoder.getBounds().height() / frameSeqDecoder.getSampleSize(),
                     Bitmap.Config.ARGB_8888);
