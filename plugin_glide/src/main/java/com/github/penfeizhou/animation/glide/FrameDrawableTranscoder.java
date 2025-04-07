@@ -1,15 +1,13 @@
 package com.github.penfeizhou.animation.glide;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.bumptech.glide.load.Options;
 import com.bumptech.glide.load.engine.Resource;
 import com.bumptech.glide.load.resource.drawable.DrawableResource;
 import com.bumptech.glide.load.resource.transcode.ResourceTranscoder;
-import com.bumptech.glide.util.Util;
 import com.github.penfeizhou.animation.apng.APNGDrawable;
 import com.github.penfeizhou.animation.apng.decode.APNGDecoder;
 import com.github.penfeizhou.animation.decode.FrameSeqDecoder;
@@ -25,13 +23,19 @@ import com.github.penfeizhou.animation.webp.decode.WebPDecoder;
  */
 class FrameDrawableTranscoder implements ResourceTranscoder<FrameSeqDecoder, Drawable> {
 
+    private  Context mContext ;
+
+    public FrameDrawableTranscoder(@NonNull Context context) {
+       this.mContext  = context;
+    }
+
     @Nullable
     @Override
     public Resource<Drawable> transcode(@NonNull Resource<FrameSeqDecoder> toTranscode, @NonNull Options options) {
         FrameSeqDecoder frameSeqDecoder = toTranscode.get();
         boolean noMeasure = options.get(AnimationDecoderOption.NO_ANIMATION_BOUNDS_MEASURE);
         if (frameSeqDecoder instanceof APNGDecoder) {
-            final APNGDrawable apngDrawable = new APNGDrawable((APNGDecoder) frameSeqDecoder);
+            final APNGDrawable apngDrawable = new APNGDrawable(mContext,(APNGDecoder) frameSeqDecoder);
             apngDrawable.setAutoPlay(false);
             apngDrawable.setNoMeasure(noMeasure);
             return new DrawableResource<Drawable>(apngDrawable) {
@@ -57,7 +61,7 @@ class FrameDrawableTranscoder implements ResourceTranscoder<FrameSeqDecoder, Dra
                 }
             };
         } else if (frameSeqDecoder instanceof WebPDecoder) {
-            final WebPDrawable webPDrawable = new WebPDrawable((WebPDecoder) frameSeqDecoder);
+            final WebPDrawable webPDrawable = new WebPDrawable(mContext,(WebPDecoder) frameSeqDecoder);
             webPDrawable.setAutoPlay(false);
             webPDrawable.setNoMeasure(noMeasure);
             return new DrawableResource<Drawable>(webPDrawable) {
@@ -82,7 +86,7 @@ class FrameDrawableTranscoder implements ResourceTranscoder<FrameSeqDecoder, Dra
                 }
             };
         } else if (frameSeqDecoder instanceof GifDecoder) {
-            final GifDrawable gifDrawable = new GifDrawable((GifDecoder) frameSeqDecoder);
+            final GifDrawable gifDrawable = new GifDrawable(mContext,(GifDecoder) frameSeqDecoder);
             gifDrawable.setAutoPlay(false);
             gifDrawable.setNoMeasure(noMeasure);
             return new DrawableResource<Drawable>(gifDrawable) {

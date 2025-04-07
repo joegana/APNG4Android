@@ -28,7 +28,7 @@ public class GlideAnimationModule extends LibraryGlideModule {
         StreamAnimationDecoder streamAnimationDecoder = new StreamAnimationDecoder(byteBufferAnimationDecoder);
         registry.prepend(InputStream.class, FrameSeqDecoder.class, streamAnimationDecoder);
         registry.prepend(ByteBuffer.class, FrameSeqDecoder.class, byteBufferAnimationDecoder);
-        registry.register(FrameSeqDecoder.class, Drawable.class, new FrameDrawableTranscoder());
+        registry.register(FrameSeqDecoder.class, Drawable.class, new FrameDrawableTranscoder(context));
         registry.register(FrameSeqDecoder.class, Bitmap.class, new FrameBitmapTranscoder(glide.getBitmapPool()));
     }
 }
