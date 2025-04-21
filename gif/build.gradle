@@ -10,12 +10,12 @@ ext{
 }
 
 android {
-    compileSdkVersion 28
+    compileSdk build_sdk_version
 
-
+    namespace "com.github.penfeizhou.animation.gif"
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 28
+        minSdkVersion min_api_level
+        targetSdkVersion target_api_level
         versionCode 1
         versionName "1.0"
 
@@ -58,7 +58,9 @@ dependencies {
 
 task generateSourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
-    classifier 'sources'
+    def  classifier = 'sources'
+    archiveClassifier.convention(classifier)
+    archiveClassifier.set(classifier)
 }
 
 afterEvaluate {

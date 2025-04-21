@@ -9,8 +9,9 @@ ext{
 }
 
 android {
-    compileSdkVersion build_sdk_version
+    compileSdk build_sdk_version
 
+    namespace "com.github.penfeizhou.animation.apng"
 
     defaultConfig {
         minSdkVersion min_api_level
@@ -32,11 +33,17 @@ android {
         }
     }
 
+    buildFeatures{
+        buildConfig = true
+    }
+
 }
 
 task generateSourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
-    classifier 'sources'
+    def  classifier = 'sources'
+    archiveClassifier.convention(classifier)
+    archiveClassifier.set(classifier)
 }
 
 afterEvaluate {

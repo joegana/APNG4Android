@@ -9,12 +9,13 @@ ext{
 }
 
 android {
-    compileSdkVersion 28
+    compileSdk build_sdk_version
 
+    namespace "com.github.penfeizhou.animation.webp"
 
     defaultConfig {
-        minSdkVersion 18
-        targetSdkVersion 28
+        minSdk min_api_level
+        targetSdk target_api_level
         versionCode 1
         versionName "1.0"
 
@@ -29,12 +30,17 @@ android {
         }
     }
 
+    buildFeatures{
+        buildConfig = true
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation("com.moorgen.controls:frameanimation:${rootProject.ext.Version}")
+
 //    implementation project(":frameanimation")
+
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation "androidx.vectordrawable:vectordrawable-animated:1.1.0"
 
@@ -45,7 +51,9 @@ dependencies {
 
 task generateSourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
-    classifier 'sources'
+    def  classifier = 'sources'
+    archiveClassifier.convention(classifier)
+    archiveClassifier.set(classifier)
 }
 
 afterEvaluate {

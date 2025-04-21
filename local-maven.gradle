@@ -43,7 +43,7 @@ artifactory {
             repoKey = artifactVersion.endsWith('SNAPSHOT') ? 'mg-app-libs-snapshot' : 'mg-app-libs-release'
             username = "${ARTIFACTORY_USER}" // The publisher user name
             password = "${ARTIFACTORY_PASSWORD}" // The publisher password
-            maven = true
+//            maven = true
         }
         defaults {
             publishArtifacts = true
@@ -52,11 +52,11 @@ artifactory {
             publishIvy = false //Publish generated Ivy descriptor files to Artifactory (true by default)
         }
     }
-    resolve {
-        repository {
-            repoKey = 'jcenter'
-            username = "${ARTIFACTORY_USER}" // The resolver user name
-            password = "${ARTIFACTORY_PASSWORD}" // The resolver password
-        }
-    }
+//    resolve {
+//        repository {
+//            repoKey = 'jcenter'
+//            username = "${ARTIFACTORY_USER}" // The resolver user name
+//            password = "${ARTIFACTORY_PASSWORD}" // The resolver password
+//        }
+//    }
 }

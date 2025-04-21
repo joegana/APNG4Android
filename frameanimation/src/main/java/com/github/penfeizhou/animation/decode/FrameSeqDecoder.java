@@ -3,10 +3,7 @@ package com.github.penfeizhou.animation.decode;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.Trace;
 import android.util.Log;
 import androidx.annotation.Nullable;
@@ -26,25 +23,20 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * @Description: Abstract Frame Animation Decoder
- * @Author: pengfei.zhou
- * @CreateDate: 2019/3/27
- */
-public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
+public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
     private static final String TAG = FrameSeqDecoder.class.getSimpleName();
-    private final int taskId;
     private static final Rect RECT_EMPTY = new Rect();
     private final Loader mLoader;
-    private final Handler workerHandler;
+    private FrameDecoderExecutor executor;
     protected List<Frame<R, W>> frames = new ArrayList<>();
     protected int frameIndex = -1;
     private int playCount;
     private Integer loopLimit = null;
-    private final Set<RenderListener> renderListeners = new HashSet<>();
+    private final Set<FrameSeqDecoder.RenderListener> renderListeners = new HashSet<>();
     private final AtomicBoolean paused = new AtomicBoolean(true);
     private final Runnable renderTask = new Runnable() {
         @Override
@@ -57,9 +49,10 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
                 long start = System.currentTimeMillis();
                 long delay = step();
                 long cost = System.currentTimeMillis() - start;
-                workerHandler.postDelayed(this, Math.max(0, delay - cost));
-                Set<RenderListener> renders = new HashSet<>(renderListeners);
-                for (RenderListener renderListener : renders) {
+                remove(renderTaskHl);
+                renderTaskHl =  post(this, Math.max(0, delay - cost));
+                Set<FrameSeqDecoder.RenderListener> renders = new HashSet<>(renderListeners);
+                for (FrameSeqDecoder.RenderListener renderListener : renders) {
                     renderListener.onRender(frameBuffer);
                 }
                 Trace.endSection();
@@ -68,6 +61,8 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
             }
         }
     };
+    private ArrayList<Future> taskHls = new ArrayList<>();
+    private Future renderTaskHl;
     protected int sampleSize = 1;
 
     private final Set<Bitmap> cacheBitmaps = new HashSet<>();
@@ -91,7 +86,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
         FINISHING,
     }
 
-    private volatile State mState = State.IDLE;
+    private volatile FrameSeqDecoder.State mState = FrameSeqDecoder.State.IDLE;
 
     protected abstract W getWriter();
 
@@ -175,22 +170,21 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
      * @param loader         webp的reader
      * @param renderListener 渲染的回调
      */
-    public FrameSeqDecoder(Loader loader, @Nullable RenderListener renderListener) {
+    public FrameSeqDecoder(Loader loader, @Nullable FrameSeqDecoder.RenderListener renderListener) {
         this.mLoader = loader;
         if (renderListener != null) {
             this.renderListeners.add(renderListener);
         }
-        this.taskId = FrameDecoderExecutor.getInstance().generateTaskId();
-        this.workerHandler = new Handler(FrameDecoderExecutor.getInstance().getLooper(taskId));
+        executor  = FrameDecoderExecutor.getInstance();
     }
 
 
-    public void addRenderListener(final RenderListener renderListener) {
-         renderListeners.add(renderListener);
+    public void addRenderListener(final FrameSeqDecoder.RenderListener renderListener) {
+        renderListeners.add(renderListener);
     }
 
-    public void removeRenderListener(final RenderListener renderListener) {
-         renderListeners.remove(renderListener);
+    public void removeRenderListener(final FrameSeqDecoder.RenderListener renderListener) {
+        renderListeners.remove(renderListener);
     }
 
     public void stopIfNeeded() {
@@ -201,7 +195,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
 
     public Rect getBounds() {
         if (fullRect == null) {
-            if (mState == State.FINISHING) {
+            if (mState == FrameSeqDecoder.State.FINISHING) {
                 Log.e(TAG, "In finishing,do not interrupt");
             }
             FutureTask<Rect> task = new FutureTask<>(() -> {
@@ -218,12 +212,12 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
                     long timeUsed = System.currentTimeMillis() - start;
                     Log.i(TAG,String.format(Locale.CHINESE,"getBounds time used:%d ms",timeUsed));
                 } catch (Exception e) {
-                      Log.e(TAG,"getBounds error:"+e);
-                     fullRect = RECT_EMPTY;
+                    Log.e(TAG,"getBounds error:"+e);
+                    fullRect = RECT_EMPTY;
                 }
                 return fullRect;
             });
-            workerHandler.postAtFrontOfQueue(task);
+           post(task);
             try {
                 task.get();
             }catch (Exception e){
@@ -256,22 +250,18 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
         if (fullRect == RECT_EMPTY) {
             return;
         }
-        if (mState == State.RUNNING || mState == State.INITIALIZING) {
+        if (mState == FrameSeqDecoder.State.RUNNING || mState == FrameSeqDecoder.State.INITIALIZING) {
             Log.i(TAG, debugInfo() + " Already started");
             return;
         }
-        if (mState == State.FINISHING) {
+        if (mState == FrameSeqDecoder.State.FINISHING) {
             Log.e(TAG, debugInfo() + " Processing,wait for finish at " + mState);
         }
         if (DEBUG) {
             Log.i(TAG, debugInfo() + "Set state to INITIALIZING");
         }
-        mState = State.INITIALIZING;
-        if (Looper.myLooper() == workerHandler.getLooper()) {
-            innerStart();
-        } else {
-            workerHandler.post(this::innerStart);
-        }
+        mState = FrameSeqDecoder.State.INITIALIZING;
+        post(this::innerStart);
     }
 
     @WorkerThread
@@ -294,12 +284,12 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
             }
         } finally {
             Log.i(TAG, debugInfo() + " Set state to RUNNING,cost " + (System.currentTimeMillis() - start));
-            mState = State.RUNNING;
+            mState = FrameSeqDecoder.State.RUNNING;
         }
         if (getNumPlays() == 0 || !finished) {
             this.frameIndex = -1;
             renderTask.run();
-            for (RenderListener renderListener : renderListeners) {
+            for (FrameSeqDecoder.RenderListener renderListener : renderListeners) {
                 renderListener.onStart();
             }
         } else {
@@ -309,7 +299,10 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
 
     @WorkerThread
     private void innerStop() {
-        workerHandler.removeCallbacksAndMessages(null);
+        for (Future taskHl : taskHls) {
+            taskHl.cancel(true);
+        }
+        taskHls.clear();
         frames.clear();
         synchronized (cacheBitmapsLock) {
             for (Bitmap bitmap : cacheBitmaps) {
@@ -338,8 +331,8 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
         if (DEBUG) {
             Log.i(TAG, debugInfo() + " release and Set state to IDLE");
         }
-        mState = State.IDLE;
-        for (RenderListener renderListener : renderListeners) {
+        mState = FrameSeqDecoder.State.IDLE;
+        for (FrameSeqDecoder.RenderListener renderListener : renderListeners) {
             renderListener.onEnd();
         }
     }
@@ -348,22 +341,18 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
         if (fullRect == RECT_EMPTY) {
             return;
         }
-        if (mState == State.FINISHING || mState == State.IDLE) {
+        if (mState == FrameSeqDecoder.State.FINISHING || mState == FrameSeqDecoder.State.IDLE) {
             Log.i(TAG, debugInfo() + "No need to stop");
             return;
         }
-        if (mState == State.INITIALIZING) {
+        if (mState == FrameSeqDecoder.State.INITIALIZING) {
             Log.e(TAG, debugInfo() + "Processing,wait for finish at " + mState);
         }
         if (DEBUG) {
             Log.i(TAG, debugInfo() + " Set state to finishing");
         }
-        mState = State.FINISHING;
-        if (Looper.myLooper() == workerHandler.getLooper()) {
-            innerStop();
-        } else {
-            workerHandler.post(this::innerStop);
-        }
+        mState = FrameSeqDecoder.State.FINISHING;
+        post(this::innerStop);
     }
 
     private String debugInfo() {
@@ -376,7 +365,7 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
     protected abstract void release();
 
     public boolean isRunning() {
-        return mState == State.RUNNING || mState == State.INITIALIZING;
+        return mState == FrameSeqDecoder.State.RUNNING || mState == FrameSeqDecoder.State.INITIALIZING;
     }
 
     public boolean isPaused() {
@@ -394,14 +383,14 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
     }
 
     public void pause() {
-        workerHandler.removeCallbacks(renderTask);
+        remove(renderTaskHl);
         paused.compareAndSet(false, true);
     }
 
     public void resume() {
         paused.compareAndSet(true, false);
-        workerHandler.removeCallbacks(renderTask);
-        workerHandler.post(renderTask);
+        remove(renderTaskHl);
+        post(renderTask);
     }
 
 
@@ -415,8 +404,8 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
         if (sample != this.sampleSize) {
             sampleSizeChanged = true;
             final boolean tempRunning = isRunning();
-            workerHandler.removeCallbacks(renderTask);
-            workerHandler.post(() -> {
+            remove(renderTaskHl);
+            post(() -> {
                 innerStop();
                 try {
                     sampleSize = sample;
@@ -499,11 +488,11 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
      * @param index <0 means reverse from last index
      */
     public Bitmap getFrameBitmap(int index) throws IOException {
-        if (mState != State.IDLE) {
+        if (mState != FrameSeqDecoder.State.IDLE) {
             Log.e(TAG, debugInfo() + ",stop first");
             return null;
         }
-        mState = State.RUNNING;
+        mState = FrameSeqDecoder.State.RUNNING;
         paused.compareAndSet(true, false);
         if (frames.isEmpty()) {
             if (mReader == null) {
@@ -553,6 +542,26 @@ public abstract class FrameSeqDecoder<R extends Reader, W extends Writer> {
             return size;
         }
     }
+
+    private Future post(Runnable runnable){
+        Future f = executor.post(runnable);
+        taskHls.add(f);
+        return f ;
+    }
+
+    private Future post(Runnable runnable,long delay){
+        Future f = executor.post(runnable,delay);
+        taskHls.add(f);
+        return f ;
+    }
+
+    private void remove(Future f){
+        if(f != null) {
+            f.cancel(true);
+            taskHls.remove(f);
+        }
+    }
+
 
     public Rect getEmptyRect(){
         return  RECT_EMPTY;

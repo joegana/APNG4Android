@@ -9,11 +9,14 @@ android {
             keyPassword 'justin'
         }
     }
-    compileSdkVersion 33
+    compileSdk build_sdk_version
+
+    namespace "com.github.penfeizhou.animation.demo"
+
     defaultConfig {
         applicationId "com.github.penfeizhou.animation.demo"
-        minSdkVersion 18
-        targetSdkVersion 33
+        minSdk min_api_level
+        targetSdk target_api_level
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -31,6 +34,10 @@ android {
         // Or, if you prefer, you can continue to check for errors in release builds,
         // but continue the build even when errors are found:
         abortOnError false
+    }
+
+    buildFeatures{
+        buildConfig = true
     }
 }
 
