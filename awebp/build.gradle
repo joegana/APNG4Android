@@ -38,9 +38,9 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "com.moorgen.sdk:common:1.7.6.2"
-//    implementation("com.moorgen.controls:frameanimation:${rootProject.ext.Version}")
+    implementation("com.moorgen.controls:frameanimation:${rootProject.ext.Version}")
 
-    api project(":frameanimation")
+//    api project(":frameanimation")
 
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation "androidx.vectordrawable:vectordrawable-animated:1.1.0"

@@ -61,8 +61,8 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "androidx.vectordrawable:vectordrawable-animated:1.1.0"
     implementation "com.moorgen.sdk:common:1.7.6.2"
-//    implementation("com.moorgen.controls:frameanimation:${rootProject.ext.Version}")
-    api project(":frameanimation")
+    implementation("com.moorgen.controls:frameanimation:${rootProject.ext.Version}")
+//    api project(":frameanimation")
 }
 
 //apply from: rootProject.file('scripts/upload.gradle')
