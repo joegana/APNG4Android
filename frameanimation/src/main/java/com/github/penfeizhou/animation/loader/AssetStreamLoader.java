@@ -24,4 +24,9 @@ public class AssetStreamLoader extends StreamLoader {
     protected InputStream getInputStream() throws IOException {
         return mContext.getAssets().open(mAssetName);
     }
+
+    @Override
+    public String getResName() {
+        return mAssetName;
+    }
 }

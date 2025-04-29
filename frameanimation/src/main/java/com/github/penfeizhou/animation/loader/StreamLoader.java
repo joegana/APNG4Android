@@ -18,4 +18,9 @@ public abstract class StreamLoader implements Loader {
     public final synchronized Reader obtain() throws IOException {
         return new StreamReader(getInputStream());
     }
+
+    @Override
+    public String getResName() {
+        return "";
+    }
 }

@@ -11,4 +11,5 @@ import java.io.IOException;
  */
 public interface Loader {
     Reader obtain() throws IOException;
+    String getResName();
 }

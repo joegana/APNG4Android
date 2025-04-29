@@ -24,4 +24,9 @@ public class ResourceStreamLoader extends StreamLoader {
     protected InputStream getInputStream() throws IOException {
         return mContext.getResources().openRawResource(mResId);
     }
+
+    @Override
+    public String getResName() {
+        return Integer.toString(mResId);
+    }
 }

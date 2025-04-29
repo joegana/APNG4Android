@@ -53,12 +53,14 @@ allprojects {
         mavenCentral()
         mavenLocal()
     }
-    def needReplaceLocal = true
-    gradle.startParameter.taskNames.each {
-        if (it.contains('uploadArchives')) {
-            needReplaceLocal = false
-        }
-    }
+
+
+//    def needReplaceLocal = true
+//    gradle.startParameter.taskNames.each {
+//        if (it.contains('uploadArchives')) {
+//            needReplaceLocal = false
+//        }
+//    }
 //    if (needReplaceLocal) {
 //        configurations.all {
 //            resolutionStrategy {
@@ -85,33 +87,33 @@ ext {
     Version = properties.version
 }
 
-task publishFrameAnimation dependsOn(":frameanimation:uploadArchives") {
-    println "FrameAnimation published"
-}
-
-task publishAPNG dependsOn(publishFrameAnimation, ":apng:uploadArchives") {
-    println "APNG published"
-}
-
-task publishAWebP dependsOn(publishFrameAnimation, ":awebp:uploadArchives") {
-    println "AWebP published"
-}
-
-task publishGif dependsOn(publishFrameAnimation, ":gif:uploadArchives") {
-    println "Gif published"
-}
-
-task publishAWebPEncoder dependsOn(publishAWebP, publishGif, ":awebpencoder:uploadArchives") {
-    println "AwebP Encoder published"
-}
-
-task publishGlidePlugin dependsOn(publishAPNG, publishAWebP, publishGif, ":plugin_glide:uploadArchives") {
-    println "GlidePlugin published"
-}
-
-task PublishAll dependsOn(publishGlidePlugin, publishAWebPEncoder) {
-    println "All published"
-}
+//task publishFrameAnimation dependsOn(":frameanimation:uploadArchives") {
+//    println "FrameAnimation published"
+//}
+//
+//task publishAPNG dependsOn(publishFrameAnimation, ":apng:uploadArchives") {
+//    println "APNG published"
+//}
+//
+//task publishAWebP dependsOn(publishFrameAnimation, ":awebp:uploadArchives") {
+//    println "AWebP published"
+//}
+//
+//task publishGif dependsOn(publishFrameAnimation, ":gif:uploadArchives") {
+//    println "Gif published"
+//}
+//
+//task publishAWebPEncoder dependsOn(publishAWebP, publishGif, ":awebpencoder:uploadArchives") {
+//    println "AwebP Encoder published"
+//}
+//
+//task publishGlidePlugin dependsOn(publishAPNG, publishAWebP, publishGif, ":plugin_glide:uploadArchives") {
+//    println "GlidePlugin published"
+//}
+//
+//task PublishAll dependsOn(publishGlidePlugin, publishAWebPEncoder) {
+//    println "All published"
+//}
 
 
 ext {

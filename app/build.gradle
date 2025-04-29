@@ -22,7 +22,11 @@ android {
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         signingConfig signingConfigs.debug
     }
+
     buildTypes {
+        debug {
+            minifyEnabled false
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -47,25 +51,31 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation "androidx.vectordrawable:vectordrawable-animated:1.1.0"
+    implementation 'com.github.bumptech.glide:glide:4.12.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
+    implementation "com.moorgen.sdk:common:1.7.6.2"
+    //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.3'
 
-    implementation("com.moorgen.controls:frameanimation:${rootProject.ext.Version}")
-    implementation("com.moorgen.controls:awebp:${rootProject.ext.Version}")
-    implementation("com.moorgen.controls:apng:${rootProject.ext.Version}")
-    implementation("com.moorgen.controls:gif:${rootProject.ext.Version}")
-    implementation("com.moorgen.controls:awebpencoder:${rootProject.ext.Version}")
-    implementation("com.moorgen.controls:plugin_glide:${rootProject.ext.Version}")
+//    implementation("com.moorgen.controls:frameanimation:${rootProject.ext.Version}")
+//    implementation("com.moorgen.controls:awebp:${rootProject.ext.Version}")
+//    implementation("com.moorgen.controls:apng:${rootProject.ext.Version}")
+//    implementation("com.moorgen.controls:gif:${rootProject.ext.Version}")
+//    implementation("com.moorgen.controls:awebpencoder:${rootProject.ext.Version}")
+//    implementation("com.moorgen.controls:plugin_glide:${rootProject.ext.Version}")
 
 //    implementation project(':frameanimation')
-//    implementation project(':plugin_glide')
-//    implementation project(':awebp')
 //    implementation project(':apng')
+//    implementation project(':awebp')
 //    implementation project(':gif')
 //    implementation project(':awebpencoder')
 
+    compileOnly project(':apng')
+    compileOnly project(':awebp')
+    compileOnly project(':gif')
 
-    implementation 'com.github.bumptech.glide:glide:4.12.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
-//    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.3'
+    implementation project(':awebpencoder')
+
+    implementation project(':plugin_glide')
 
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'

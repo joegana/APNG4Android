@@ -13,6 +13,10 @@ import com.github.penfeizhou.animation.decode.Frame;
 import com.github.penfeizhou.animation.decode.FrameSeqDecoder;
 import com.github.penfeizhou.animation.io.Reader;
 import com.github.penfeizhou.animation.loader.Loader;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -24,6 +28,8 @@ import java.util.List;
  * @CreateDate: 2019-05-13
  */
 public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
+
+    private static Logger logger = LoggerFactory.getLogger("apng.APNGDecoder");
 
     private APNGWriter apngWriter;
     private int mLoopCount;
@@ -129,6 +135,7 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
         if(DEBUG) {
             Perf.perfEnd("Apng Read");
         }
+        logger.debug("read: End!");
         return new Rect(0, 0, canvasWidth, canvasHeight);
     }
 

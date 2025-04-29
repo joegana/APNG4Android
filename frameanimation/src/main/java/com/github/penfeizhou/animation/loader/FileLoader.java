@@ -25,4 +25,9 @@ public class FileLoader implements Loader {
     public synchronized Reader obtain() throws IOException {
         return new FileReader(mFile);
     }
+
+    @Override
+    public String getResName() {
+        return mFile.getName();
+    }
 }

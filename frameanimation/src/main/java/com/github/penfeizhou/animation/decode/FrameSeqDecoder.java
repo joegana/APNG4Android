@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Trace;
-import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import com.github.penfeizhou.animation.executor.FrameDecoderExecutor;
@@ -13,6 +12,9 @@ import com.github.penfeizhou.animation.frame.BuildConfig;
 import com.github.penfeizhou.animation.io.Reader;
 import com.github.penfeizhou.animation.io.Writer;
 import com.github.penfeizhou.animation.loader.Loader;
+import com.moorgen.sdk.common.CUtilKt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -28,8 +30,10 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
+    private static Logger logger = LoggerFactory.getLogger("apng.FrameSeqDecoder");
     private static final String TAG = FrameSeqDecoder.class.getSimpleName();
     private static final Rect RECT_EMPTY = new Rect();
+    private String mResName;
     private final Loader mLoader;
     private FrameDecoderExecutor executor;
     protected List<Frame<R, W>> frames = new ArrayList<>();
@@ -52,9 +56,12 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
                 remove(renderTaskHl);
                 renderTaskHl =  post(this, Math.max(0, delay - cost));
                 Set<FrameSeqDecoder.RenderListener> renders = new HashSet<>(renderListeners);
-                for (FrameSeqDecoder.RenderListener renderListener : renders) {
-                    renderListener.onRender(frameBuffer);
-                }
+                CUtilKt.callOnMain(0, null, () -> {
+                    for (RenderListener renderListener : renders) {
+                        renderListener.onRender(frameBuffer);
+                    }
+                });
+
                 Trace.endSection();
             } else {
                 stop();
@@ -128,10 +135,8 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
             try {
                 Bitmap.Config config = Bitmap.Config.ARGB_8888;
                 ret = Bitmap.createBitmap(width, height, config);
-            } catch (Exception e) {
-                Log.e(TAG,"obtainBitmap:"+e);
-            } catch (OutOfMemoryError e) {
-                Log.e(TAG,"obtainBitmap:"+e);
+            } catch (Exception | OutOfMemoryError e) {
+                logger.error("{} obtainBitmap:",mResName,e);
             }
             return ret;
         }
@@ -165,13 +170,13 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
         void onEnd();
     }
 
-
     /**
      * @param loader         webp的reader
      * @param renderListener 渲染的回调
      */
     public FrameSeqDecoder(Loader loader, @Nullable FrameSeqDecoder.RenderListener renderListener) {
         this.mLoader = loader;
+        this.mResName = loader.getResName();
         if (renderListener != null) {
             this.renderListeners.add(renderListener);
         }
@@ -196,11 +201,11 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
     public Rect getBounds() {
         if (fullRect == null) {
             if (mState == FrameSeqDecoder.State.FINISHING) {
-                Log.e(TAG, "In finishing,do not interrupt");
+                logger.warn("{}:In finishing,do not interrupt",mResName);
             }
+            long start = System.currentTimeMillis();
             FutureTask<Rect> task = new FutureTask<>(() -> {
                 try {
-                    long start = System.currentTimeMillis();
                     if (fullRect == null) {
                         if (mReader == null) {
                             mReader = getReader(mLoader.obtain());
@@ -209,10 +214,8 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
                         }
                         initCanvasBounds(read(mReader));
                     }
-                    long timeUsed = System.currentTimeMillis() - start;
-                    Log.i(TAG,String.format(Locale.CHINESE,"getBounds time used:%d ms",timeUsed));
                 } catch (Exception e) {
-                    Log.e(TAG,"getBounds error:"+e);
+                    logger.error("{} getBounds error:",mResName,e);
                     fullRect = RECT_EMPTY;
                 }
                 return fullRect;
@@ -221,8 +224,10 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
             try {
                 task.get();
             }catch (Exception e){
-                Log.e(TAG,"getBounds/get error:"+e);
+                logger.error("{} getBounds error:",mResName,e);
             }
+            long timeUsed = System.currentTimeMillis() - start;
+            logger.info("{} getBounds time used:{} ms",mResName,timeUsed);
         }
         return fullRect == null ? RECT_EMPTY : fullRect;
     }
@@ -233,7 +238,7 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
         if (mWriter == null) {
             mWriter = getWriter();
         }
-        Log.d(TAG,String.format(Locale.CHINESE,"initCanvasBounds:%s",fullRect.toString()));
+        logger.info("{} initCanvasBounds:{}",mResName,fullRect);
     }
 
 
@@ -251,14 +256,14 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
             return;
         }
         if (mState == FrameSeqDecoder.State.RUNNING || mState == FrameSeqDecoder.State.INITIALIZING) {
-            Log.i(TAG, debugInfo() + " Already started");
+            logger.debug("{}:{}, Already started",mResName,debugInfo());
             return;
         }
         if (mState == FrameSeqDecoder.State.FINISHING) {
-            Log.e(TAG, debugInfo() + " Processing,wait for finish at " + mState);
+            logger.debug( "{}:{}  Processing,wait for finish at {}" ,mResName,debugInfo(), mState);
         }
         if (DEBUG) {
-            Log.i(TAG, debugInfo() + "Set state to INITIALIZING");
+            logger.debug("{}:{} Set state to INITIALIZING",mResName,debugInfo());
         }
         mState = FrameSeqDecoder.State.INITIALIZING;
         post(this::innerStart);
@@ -279,27 +284,32 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
                     }
                     initCanvasBounds(read(mReader));
                 } catch (Throwable e) {
-                    Log.e(TAG, e.toString());
+                    logger.error("{}:innerStart error ",mResName,e);
                 }
             }
         } finally {
-            Log.i(TAG, debugInfo() + " Set state to RUNNING,cost " + (System.currentTimeMillis() - start));
+            logger.info("{}:{} Set state to RUNNING,cost {} ms", mResName,debugInfo(),
+                    (System.currentTimeMillis() - start));
             mState = FrameSeqDecoder.State.RUNNING;
         }
         if (getNumPlays() == 0 || !finished) {
             this.frameIndex = -1;
             renderTask.run();
-            for (FrameSeqDecoder.RenderListener renderListener : renderListeners) {
-                renderListener.onStart();
-            }
+            Set<FrameSeqDecoder.RenderListener> renders = new HashSet<>(renderListeners);
+            CUtilKt.callOnMain(0, null, () -> {
+                for (RenderListener renderListener : renders) {
+                    renderListener.onStart();
+                }
+            });
+
         } else {
-            Log.i(TAG, debugInfo() + " No need to started");
+            logger.info("{}:{},No need to started",mResName,debugInfo());
         }
     }
 
     @WorkerThread
     private void innerStop() {
-        for (Future taskHl : taskHls) {
+        for (Future<?> taskHl : taskHls) {
             taskHl.cancel(true);
         }
         taskHls.clear();
@@ -325,16 +335,18 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
                 mWriter.close();
             }
         } catch (IOException e) {
-            Log.e(TAG, e.toString());
+            logger.error("{}:innerStop",mResName,e);
         }
         release();
-        if (DEBUG) {
-            Log.i(TAG, debugInfo() + " release and Set state to IDLE");
-        }
+        logger.debug("{}:{}  release and Set state to IDLE",mResName,debugInfo());
         mState = FrameSeqDecoder.State.IDLE;
-        for (FrameSeqDecoder.RenderListener renderListener : renderListeners) {
-            renderListener.onEnd();
-        }
+        Set<FrameSeqDecoder.RenderListener> renders = new HashSet<>(renderListeners);
+        CUtilKt.callOnMain(0, null, () -> {
+            for (RenderListener renderListener : renders) {
+                renderListener.onEnd();
+            }
+        });
+
     }
 
     public void stop() {
@@ -342,22 +354,23 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
             return;
         }
         if (mState == FrameSeqDecoder.State.FINISHING || mState == FrameSeqDecoder.State.IDLE) {
-            Log.i(TAG, debugInfo() + "No need to stop");
+            logger.info("{}:{} No need to stop",mResName,debugInfo());
             return;
         }
         if (mState == FrameSeqDecoder.State.INITIALIZING) {
-            Log.e(TAG, debugInfo() + "Processing,wait for finish at " + mState);
+            logger.info("{}:{} Processing,wait for finish at {}",mResName,debugInfo(),mState);
         }
-        if (DEBUG) {
-            Log.i(TAG, debugInfo() + " Set state to finishing");
-        }
+
+        logger.debug("{}:{}  Set state to finishing",mResName,debugInfo());
+
         mState = FrameSeqDecoder.State.FINISHING;
         post(this::innerStop);
     }
 
     private String debugInfo() {
         if (DEBUG) {
-            return String.format("thread is %s, decoder is %s,state is %s", Thread.currentThread(), FrameSeqDecoder.this, mState.toString());
+            return String.format(Locale.getDefault(),"thread is %s, decoder is %s,state is %s",
+                    Thread.currentThread(), FrameSeqDecoder.this, mState.toString());
         }
         return "";
     }
@@ -414,7 +427,7 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
                         innerStart();
                     }
                 } catch (IOException e) {
-                    Log.e(TAG,"setDesiredSize:"+e);
+                    logger.error("{}:setDesiredSize:",mResName,e);
                 }
             });
         }
@@ -489,7 +502,7 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
      */
     public Bitmap getFrameBitmap(int index) throws IOException {
         if (mState != FrameSeqDecoder.State.IDLE) {
-            Log.e(TAG, debugInfo() + ",stop first");
+            logger.error("{}: {} ,stop first",mResName,debugInfo());
             return null;
         }
         mState = FrameSeqDecoder.State.RUNNING;
