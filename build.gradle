@@ -4,6 +4,7 @@ buildscript {
     ext{
         kotlin = '1.6.10'
         kotlinx = "1.6.4"
+        agp = "4.2.1"
     }
     repositories {
         maven {
@@ -20,7 +21,7 @@ buildscript {
         mavenLocal()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.4.1'
+        classpath "com.android.tools.build:gradle:$agp"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin"
         classpath 'org.jfrog.buildinfo:build-info-extractor-gradle:5.2.0'
     }

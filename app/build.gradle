@@ -56,12 +56,12 @@ dependencies {
     implementation "com.moorgen.sdk:common:1.7.6.2"
     //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.3'
 
-//    implementation("com.moorgen.controls:frameanimation:${rootProject.ext.Version}")
-//    implementation("com.moorgen.controls:awebp:${rootProject.ext.Version}")
-//    implementation("com.moorgen.controls:apng:${rootProject.ext.Version}")
-//    implementation("com.moorgen.controls:gif:${rootProject.ext.Version}")
-//    implementation("com.moorgen.controls:awebpencoder:${rootProject.ext.Version}")
-//    implementation("com.moorgen.controls:plugin_glide:${rootProject.ext.Version}")
+    implementation("com.moorgen.controls:frameanimation:${rootProject.ext.Version}")
+    implementation("com.moorgen.controls:awebp:${rootProject.ext.Version}")
+    implementation("com.moorgen.controls:apng:${rootProject.ext.Version}")
+    implementation("com.moorgen.controls:gif:${rootProject.ext.Version}")
+    implementation("com.moorgen.controls:awebpencoder:${rootProject.ext.Version}")
+    implementation("com.moorgen.controls:plugin_glide:${rootProject.ext.Version}")
 
 //    implementation project(':frameanimation')
 //    implementation project(':apng')
