@@ -13,6 +13,8 @@ import com.github.penfeizhou.animation.decode.Frame;
 import com.github.penfeizhou.animation.decode.FrameSeqDecoder;
 import com.github.penfeizhou.animation.io.Reader;
 import com.github.penfeizhou.animation.loader.Loader;
+import com.moorgen.sdk.common.CUtilKt;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
@@ -49,7 +51,7 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
     public APNGDecoder(Loader loader, RenderListener renderListener) {
         super(loader, renderListener);
         paint.setAntiAlias(true);
-        resName = loader.getResName();
+        resName = CUtilKt.format("%s@%d",loader.getResName(),this.hashCode());
     }
 
     @Override
@@ -80,7 +82,7 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
     @Override
     protected Rect read(APNGReader reader) throws IOException {
         long start  = System.currentTimeMillis();
-        logger.debug("read: {} Start!",resName);
+        logger.debug(" {} read Start!",resName);
         if(DEBUG) {
             Perf.perfBegin("Apng Read");
         }
@@ -136,7 +138,7 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
         if(DEBUG) {
             Perf.perfEnd("Apng Read");
         }
-        logger.debug("read: {} End! Time used: {} ms",resName,System.currentTimeMillis() - start);
+        logger.debug("{} read End! Time used: {} ms",resName,System.currentTimeMillis() - start);
         return new Rect(0, 0, canvasWidth, canvasHeight);
     }
 

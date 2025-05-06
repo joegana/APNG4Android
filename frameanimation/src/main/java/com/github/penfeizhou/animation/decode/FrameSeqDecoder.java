@@ -12,6 +12,8 @@ import com.github.penfeizhou.animation.frame.BuildConfig;
 import com.github.penfeizhou.animation.io.Reader;
 import com.github.penfeizhou.animation.io.Writer;
 import com.github.penfeizhou.animation.loader.Loader;
+import com.moorgen.sdk.common.CUtilKt;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
@@ -172,7 +174,7 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
      */
     public FrameSeqDecoder(Loader loader, @Nullable FrameSeqDecoder.RenderListener renderListener) {
         this.mLoader = loader;
-        this.mResName = loader.getResName();
+        this.mResName = CUtilKt.format("%s@%d",loader.getResName(),this.hashCode());
         if (renderListener != null) {
             this.renderListeners.add(renderListener);
         }
@@ -323,6 +325,7 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
         try {
             if (mReader != null) {
                 mReader.close();
+                mReader = null;
             }
             if (mWriter != null) {
                 mWriter.close();

@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                        "apng/wheel.png",
                         "apng/voice_card.png",
                         "voice_card1.png",
-//                        "start.png",
+                        "start.png",
 //                        "apng_detail_guide.png",
                 });
                 startActivity(intent);
