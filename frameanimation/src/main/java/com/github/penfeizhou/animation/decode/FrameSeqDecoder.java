@@ -56,11 +56,9 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
                 remove(renderTaskHl);
                 renderTaskHl =  post(this, Math.max(0, delay - cost));
                 Set<FrameSeqDecoder.RenderListener> renders = new HashSet<>(renderListeners);
-                CUtilKt.callOnMain(0, null, () -> {
-                    for (RenderListener renderListener : renders) {
-                        renderListener.onRender(frameBuffer);
-                    }
-                });
+                for (RenderListener renderListener : renders) {
+                    renderListener.onRender(frameBuffer);
+                }
 
                 Trace.endSection();
             } else {
@@ -296,11 +294,9 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
             this.frameIndex = -1;
             renderTask.run();
             Set<FrameSeqDecoder.RenderListener> renders = new HashSet<>(renderListeners);
-            CUtilKt.callOnMain(0, null, () -> {
-                for (RenderListener renderListener : renders) {
-                    renderListener.onStart();
-                }
-            });
+            for (RenderListener renderListener : renders) {
+                renderListener.onStart();
+            }
 
         } else {
             logger.info("{}:{},No need to started",mResName,debugInfo());
@@ -341,12 +337,9 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
         logger.debug("{}:{}  release and Set state to IDLE",mResName,debugInfo());
         mState = FrameSeqDecoder.State.IDLE;
         Set<FrameSeqDecoder.RenderListener> renders = new HashSet<>(renderListeners);
-        CUtilKt.callOnMain(0, null, () -> {
-            for (RenderListener renderListener : renders) {
-                renderListener.onEnd();
-            }
-        });
-
+        for (RenderListener renderListener : renders) {
+            renderListener.onEnd();
+        }
     }
 
     public void stop() {

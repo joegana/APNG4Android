@@ -15,13 +15,13 @@ import android.os.Build;
 import android.util.Log;
 import com.github.penfeizhou.animation.decode.FrameSeqDecoder;
 import com.github.penfeizhou.animation.loader.Loader;
+import com.moorgen.sdk.common.CUtilKt;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.vectordrawable.graphics.drawable.Animatable2Compat;
@@ -186,12 +186,14 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
     }
 
     @Override
-    @MainThread
+
     public void onStart() {
-        ArrayList<AnimationCallback> callbacks = new ArrayList<>(animationCallbacks);
-        for (AnimationCallback animationCallback : callbacks) {
-            animationCallback.onAnimationStart(FrameAnimationDrawable.this);
-        }
+        CUtilKt.callOnMain(0, null, () -> {
+            ArrayList<AnimationCallback> callbacks = new ArrayList<>(animationCallbacks);
+            for (AnimationCallback animationCallback : callbacks) {
+                animationCallback.onAnimationStart(FrameAnimationDrawable.this);
+            }
+        });
     }
 
     @Override
@@ -213,16 +215,17 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
         }
         this.bitmap.copyPixelsFromBuffer(byteBuffer);
 
-       invalidateSelf();
+        CUtilKt.callOnMain(0, null, this::invalidateSelf);
     }
 
     @Override
-    @MainThread
     public void onEnd() {
-        ArrayList<AnimationCallback> callbacks = new ArrayList<>(animationCallbacks);
-        for (AnimationCallback animationCallback : callbacks) {
-            animationCallback.onAnimationEnd(FrameAnimationDrawable.this);
-        }
+        CUtilKt.callOnMain(0, null, () -> {
+            ArrayList<AnimationCallback> callbacks = new ArrayList<>(animationCallbacks);
+            for (AnimationCallback animationCallback : callbacks) {
+                animationCallback.onAnimationEnd(FrameAnimationDrawable.this);
+            }
+        });
     }
 
     @Override
