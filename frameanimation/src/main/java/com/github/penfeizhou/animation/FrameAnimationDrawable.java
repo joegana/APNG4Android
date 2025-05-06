@@ -44,6 +44,7 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
     private final Matrix matrix = new Matrix();
     private final Set<AnimationCallback> animationCallbacks = new HashSet<>();
     private Bitmap bitmap;
+    private String mResName;
     private boolean autoPlay = true;
 
     private final Set<WeakReference<Callback>> obtainedCallbacks = new HashSet<>();
@@ -54,12 +55,14 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
         this.context = context;
         paint.setAntiAlias(true);
         this.frameSeqDecoder = frameSeqDecoder;
+        mResName = frameSeqDecoder.getResName();
     }
 
     public FrameAnimationDrawable(@NonNull Context context,@NonNull Loader provider) {
         this.context = context;
         paint.setAntiAlias(true);
         this.frameSeqDecoder = createFrameSeqDecoder(provider, this);
+        mResName = provider.getResName();
     }
 
     public void setAutoPlay(boolean autoPlay) {
@@ -108,9 +111,7 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
     }
 
     private void innerStart() {
-        if (FrameSeqDecoder.DEBUG) {
-            Log.d(TAG, this + ",start");
-        }
+        logger.debug("{} , start ！",mResName);
 
         this.frameSeqDecoder.addRenderListener(this);
         if (autoPlay) {
@@ -128,9 +129,7 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
     }
 
     private void innerStop() {
-        if (FrameSeqDecoder.DEBUG) {
-            Log.d(TAG, this + ",stop");
-        }
+        logger.debug("{} , stop ！",mResName);
 
         this.frameSeqDecoder.removeRenderListener(this);
         if (autoPlay) {
@@ -350,5 +349,9 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
      */
     public Bitmap getCurrentFrame(){
         return bitmap;
+    }
+
+    public String getResName(){
+        return mResName;
     }
 }

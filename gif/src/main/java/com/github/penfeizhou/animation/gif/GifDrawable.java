@@ -1,7 +1,9 @@
 package com.github.penfeizhou.animation.gif;
 
 import android.content.Context;
+import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
 import com.github.penfeizhou.animation.FrameAnimationDrawable;
 import com.github.penfeizhou.animation.decode.FrameSeqDecoder;
 import com.github.penfeizhou.animation.gif.decode.GifDecoder;
@@ -30,17 +32,26 @@ public class GifDrawable extends FrameAnimationDrawable<GifDecoder> {
     }
 
 
-    public static GifDrawable fromAsset(Context context, String assetPath) {
+    public static GifDrawable fromAsset(@NonNull Context context, @NonNull String assetPath) {
+        if(TextUtils.isEmpty(assetPath)){
+            return null ;
+        }
         AssetStreamLoader assetStreamLoader = new AssetStreamLoader(context, assetPath);
         return new GifDrawable(context,assetStreamLoader);
     }
 
-    public static GifDrawable fromFile(Context context,String filePath) {
+    public static GifDrawable fromFile(@NonNull Context context,@NonNull String filePath) {
+        if(TextUtils.isEmpty(filePath)){
+            return null ;
+        }
         FileLoader fileLoader = new FileLoader(filePath);
         return new GifDrawable(context,fileLoader);
     }
 
-    public static GifDrawable fromResource(Context context, int resId) {
+    public static GifDrawable fromResource(@NonNull Context context, int resId) {
+        if(resId == 0){
+            return null ;
+        }
         ResourceStreamLoader resourceStreamLoader = new ResourceStreamLoader(context, resId);
         return new GifDrawable(context,resourceStreamLoader);
     }

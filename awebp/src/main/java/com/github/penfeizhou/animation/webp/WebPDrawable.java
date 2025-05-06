@@ -2,6 +2,9 @@ package com.github.penfeizhou.animation.webp;
 
 
 import android.content.Context;
+import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import com.github.penfeizhou.animation.FrameAnimationDrawable;
 import com.github.penfeizhou.animation.decode.FrameSeqDecoder;
@@ -31,17 +34,26 @@ public class WebPDrawable extends FrameAnimationDrawable<WebPDecoder> {
         return new WebPDecoder(streamLoader, listener);
     }
 
-    public static WebPDrawable fromAsset(Context context, String assetPath) {
+    public static WebPDrawable fromAsset(@NonNull Context context, @NonNull String assetPath) {
+        if(TextUtils.isEmpty(assetPath)){
+            return null ;
+        }
         AssetStreamLoader assetStreamLoader = new AssetStreamLoader(context, assetPath);
         return new WebPDrawable(context,assetStreamLoader);
     }
 
-    public static WebPDrawable fromFile(Context context,String filePath) {
+    public static WebPDrawable fromFile(@NonNull Context context,@NonNull String filePath) {
+        if(TextUtils.isEmpty(filePath)){
+            return null ;
+        }
         FileLoader fileLoader = new FileLoader(filePath);
         return new WebPDrawable(context,fileLoader);
     }
 
-    public static WebPDrawable fromResource(Context context, int resId) {
+    public static WebPDrawable fromResource(@NonNull Context context, int resId) {
+        if(resId == 0){
+            return  null ;
+        }
         ResourceStreamLoader resourceStreamLoader = new ResourceStreamLoader(context, resId);
         return new WebPDrawable(context,resourceStreamLoader);
     }

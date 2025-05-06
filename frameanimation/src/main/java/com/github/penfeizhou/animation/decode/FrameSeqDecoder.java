@@ -12,7 +12,6 @@ import com.github.penfeizhou.animation.frame.BuildConfig;
 import com.github.penfeizhou.animation.io.Reader;
 import com.github.penfeizhou.animation.io.Writer;
 import com.github.penfeizhou.animation.loader.Loader;
-import com.moorgen.sdk.common.CUtilKt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
@@ -59,7 +58,6 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
                 for (RenderListener renderListener : renders) {
                     renderListener.onRender(frameBuffer);
                 }
-
                 Trace.endSection();
             } else {
                 stop();
@@ -260,9 +258,9 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
         if (mState == FrameSeqDecoder.State.FINISHING) {
             logger.debug( "{}:{}  Processing,wait for finish at {}" ,mResName,debugInfo(), mState);
         }
-        if (DEBUG) {
-            logger.debug("{}:{} Set state to INITIALIZING",mResName,debugInfo());
-        }
+
+        logger.debug("{}:{} Set state to INITIALIZING",mResName,debugInfo());
+
         mState = FrameSeqDecoder.State.INITIALIZING;
         post(this::innerStart);
     }
@@ -325,7 +323,6 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
         try {
             if (mReader != null) {
                 mReader.close();
-                mReader = null;
             }
             if (mWriter != null) {
                 mWriter.close();
@@ -571,5 +568,9 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
 
     public Rect getEmptyRect(){
         return  RECT_EMPTY;
+    }
+
+    public String getResName() {
+        return mResName;
     }
 }

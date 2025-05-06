@@ -1,7 +1,6 @@
 package com.github.penfeizhou.animation.loader;
 
 import android.content.Context;
-
 import java.io.IOException;
 import java.io.InputStream;
 

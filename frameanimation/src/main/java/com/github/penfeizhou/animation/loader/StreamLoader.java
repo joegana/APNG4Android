@@ -3,7 +3,6 @@ package com.github.penfeizhou.animation.loader;
 
 import com.github.penfeizhou.animation.io.Reader;
 import com.github.penfeizhou.animation.io.StreamReader;
-
 import java.io.IOException;
 import java.io.InputStream;
 

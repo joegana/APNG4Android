@@ -13,10 +13,8 @@ import com.github.penfeizhou.animation.decode.Frame;
 import com.github.penfeizhou.animation.decode.FrameSeqDecoder;
 import com.github.penfeizhou.animation.io.Reader;
 import com.github.penfeizhou.animation.loader.Loader;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -33,8 +31,8 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
 
     private APNGWriter apngWriter;
     private int mLoopCount;
+    private String resName;
     private final Paint paint = new Paint();
-
 
     private static class SnapShot {
         byte dispose_op;
@@ -51,6 +49,7 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
     public APNGDecoder(Loader loader, RenderListener renderListener) {
         super(loader, renderListener);
         paint.setAntiAlias(true);
+        resName = loader.getResName();
     }
 
     @Override
@@ -80,6 +79,8 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
 
     @Override
     protected Rect read(APNGReader reader) throws IOException {
+        long start  = System.currentTimeMillis();
+        logger.debug("read: {} Start!",resName);
         if(DEBUG) {
             Perf.perfBegin("Apng Read");
         }
@@ -135,7 +136,7 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
         if(DEBUG) {
             Perf.perfEnd("Apng Read");
         }
-        logger.debug("read: End!");
+        logger.debug("read: {} End! Time used: {} ms",resName,System.currentTimeMillis() - start);
         return new Rect(0, 0, canvasWidth, canvasHeight);
     }
 
