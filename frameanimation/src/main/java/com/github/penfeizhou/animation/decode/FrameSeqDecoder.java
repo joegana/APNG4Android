@@ -13,7 +13,6 @@ import com.github.penfeizhou.animation.io.Reader;
 import com.github.penfeizhou.animation.io.Writer;
 import com.github.penfeizhou.animation.loader.Loader;
 import com.moorgen.sdk.common.CUtilKt;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
@@ -35,6 +34,7 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
     private static final String TAG = FrameSeqDecoder.class.getSimpleName();
     private static final Rect RECT_EMPTY = new Rect();
     private String mResName;
+    private String mResNameBk;
     private final Loader mLoader;
     private FrameDecoderExecutor executor;
     protected List<Frame<R, W>> frames = new ArrayList<>();
@@ -43,6 +43,8 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
     private Integer loopLimit = null;
     private final Set<FrameSeqDecoder.RenderListener> renderListeners = new HashSet<>();
     private final AtomicBoolean paused = new AtomicBoolean(true);
+    private final Object loadMonitor = new Object();
+    private AtomicBoolean isLoaded = new AtomicBoolean(false);
     private final Runnable renderTask = new Runnable() {
         @Override
         public void run() {
@@ -174,6 +176,7 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
      */
     public FrameSeqDecoder(Loader loader, @Nullable FrameSeqDecoder.RenderListener renderListener) {
         this.mLoader = loader;
+        this.mResNameBk = loader.getResName();
         this.mResName = CUtilKt.format("%s@%d",loader.getResName(),this.hashCode());
         if (renderListener != null) {
             this.renderListeners.add(renderListener);
@@ -198,19 +201,25 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
 
     public Rect getBounds() {
         if (fullRect == null) {
+            logger.debug("{} getBounds start!",mResName);
             if (mState == FrameSeqDecoder.State.FINISHING) {
                 logger.warn("{}:In finishing,do not interrupt",mResName);
             }
             long start = System.currentTimeMillis();
             FutureTask<Rect> task = new FutureTask<>(() -> {
                 try {
-                    if (fullRect == null) {
-                        if (mReader == null) {
-                            mReader = getReader(mLoader.obtain());
-                        } else {
-                            mReader.reset();
+                    synchronized (loadMonitor){
+                        if(isLoaded.compareAndSet(false,true)) {
+                            if (fullRect == null) {
+                                if (mReader == null) {
+                                    mReader = getReader(mLoader.obtain());
+                                } else {
+                                    mReader.reset();
+                                }
+                                Rect rect = read(mReader);
+                                initCanvasBounds(rect);
+                            }
                         }
-                        initCanvasBounds(read(mReader));
                     }
                 } catch (Exception e) {
                     logger.error("{} getBounds error:",mResName,e);
@@ -218,14 +227,14 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
                 }
                 return fullRect;
             });
-           post(task);
             try {
+                post(task);
                 task.get();
             }catch (Exception e){
                 logger.error("{} getBounds error:",mResName,e);
             }
             long timeUsed = System.currentTimeMillis() - start;
-            logger.info("{} getBounds time used:{} ms",mResName,timeUsed);
+            logger.debug("{} getBounds end! time used:{} ms",mResName,timeUsed);
         }
         return fullRect == null ? RECT_EMPTY : fullRect;
     }
@@ -275,20 +284,25 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
         try {
             if (frames.isEmpty()) {
                 try {
-                    if (mReader == null) {
-                        mReader = getReader(mLoader.obtain());
-                    } else {
-                        mReader.reset();
+                    synchronized (loadMonitor){
+                        if(isLoaded.compareAndSet(false,true)){
+                            if (mReader == null) {
+                                mReader = getReader(mLoader.obtain());
+                            } else {
+                                mReader.reset();
+                            }
+                            Rect rect = read(mReader);
+                            initCanvasBounds(rect);
+                        }
                     }
-                    initCanvasBounds(read(mReader));
                 } catch (Throwable e) {
                     logger.error("{}:innerStart error ",mResName,e);
                 }
             }
         } finally {
+            mState = FrameSeqDecoder.State.RUNNING;
             logger.info("{}:{} Set state to RUNNING,cost {} ms", mResName,debugInfo(),
                     (System.currentTimeMillis() - start));
-            mState = FrameSeqDecoder.State.RUNNING;
         }
         if (getNumPlays() == 0 || !finished) {
             this.frameIndex = -1;
@@ -333,6 +347,7 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
         } catch (IOException e) {
             logger.error("{}:innerStop",mResName,e);
         }
+        isLoaded.compareAndSet(true,false);
         release();
         logger.debug("{}:{}  release and Set state to IDLE",mResName,debugInfo());
         mState = FrameSeqDecoder.State.IDLE;
@@ -415,7 +430,13 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
                 innerStop();
                 try {
                     sampleSize = sample;
-                    initCanvasBounds(read(getReader(mLoader.obtain())));
+                    synchronized (loadMonitor){
+                        if(isLoaded.compareAndSet(false,true)){
+                            Rect rect = read(getReader(mLoader.obtain()));
+                            initCanvasBounds(rect);
+                        }
+                    }
+
                     if (tempRunning) {
                         innerStart();
                     }
@@ -439,7 +460,7 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
         return sample;
     }
 
-    protected abstract Rect read(R reader) throws IOException;
+    protected  abstract Rect read(R reader) throws IOException;
 
     private int getNumPlays() {
         return this.loopLimit != null ? this.loopLimit : this.getLoopCount();
@@ -501,12 +522,18 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
         mState = FrameSeqDecoder.State.RUNNING;
         paused.compareAndSet(true, false);
         if (frames.isEmpty()) {
-            if (mReader == null) {
-                mReader = getReader(mLoader.obtain());
-            } else {
-                mReader.reset();
+            synchronized (loadMonitor){
+                if(isLoaded.compareAndSet(false,true)){
+                    if (mReader == null) {
+                        mReader = getReader(mLoader.obtain());
+                    } else {
+                        mReader.reset();
+                    }
+                    Rect rect = read(mReader);
+                    initCanvasBounds(rect);
+                }
             }
-            initCanvasBounds(read(mReader));
+
         }
         if (index < 0) {
             index += this.frames.size();
@@ -523,9 +550,9 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
             }
         }
         frameBuffer.rewind();
-        Bitmap bitmap = Bitmap.createBitmap(getBounds().width() / getSampleSize(), getBounds().height() / getSampleSize(), Bitmap.Config.ARGB_8888);
+        Rect dBounds = getBounds();
+        Bitmap bitmap = Bitmap.createBitmap(dBounds.width() / getSampleSize(), dBounds.height() / getSampleSize(), Bitmap.Config.ARGB_8888);
         bitmap.copyPixelsFromBuffer(frameBuffer);
-        innerStop();
         return bitmap;
     }
 
@@ -574,6 +601,6 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
     }
 
     public String getResName() {
-        return mResName;
+        return mResNameBk;
     }
 }

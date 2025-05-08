@@ -10,6 +10,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.PixelFormat;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.Log;
@@ -55,14 +56,14 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
         this.context = context;
         paint.setAntiAlias(true);
         this.frameSeqDecoder = frameSeqDecoder;
-        mResName = frameSeqDecoder.getResName();
+        mResName = CUtilKt.format("%s@%d", frameSeqDecoder.getResName(),this.hashCode());
     }
 
     public FrameAnimationDrawable(@NonNull Context context,@NonNull Loader provider) {
         this.context = context;
         paint.setAntiAlias(true);
         this.frameSeqDecoder = createFrameSeqDecoder(provider, this);
-        mResName = provider.getResName();
+        mResName = CUtilKt.format("%s@%d", frameSeqDecoder.getResName(),this.hashCode());
     }
 
     public void setAutoPlay(boolean autoPlay) {
@@ -121,6 +122,7 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
                 this.frameSeqDecoder.start();
             }
         }
+        logger.debug("{} , start End！",mResName);
     }
 
     @Override
@@ -137,6 +139,7 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
         } else {
             this.frameSeqDecoder.stopIfNeeded();
         }
+        logger.debug("{} , stop End！",mResName);
     }
 
     @Override
@@ -156,17 +159,20 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
     @Override
     public void setBounds(int left, int top, int right, int bottom) {
         super.setBounds(left, top, right, bottom);
-        boolean sampleSizeChanged = frameSeqDecoder.setDesiredSize(getBounds().width(), getBounds().height());
+        Rect wBounds = getBounds();
+        Rect dBounds = frameSeqDecoder.getBounds();
+        boolean sampleSizeChanged = frameSeqDecoder.setDesiredSize(wBounds.width(), wBounds.height());
         matrix.setScale(
-                1.0f * getBounds().width() * frameSeqDecoder.getSampleSize() / frameSeqDecoder.getBounds().width(),
-                1.0f * getBounds().height() * frameSeqDecoder.getSampleSize() / frameSeqDecoder.getBounds().height());
+                1.0f * getBounds().width() * frameSeqDecoder.getSampleSize() / dBounds.width(),
+                1.0f * getBounds().height() * frameSeqDecoder.getSampleSize() / dBounds.height());
 
-        if (sampleSizeChanged)
+        if (sampleSizeChanged) {
             this.bitmap = Bitmap.createBitmap(
                     context.getResources().getDisplayMetrics(),
-                    frameSeqDecoder.getBounds().width() / frameSeqDecoder.getSampleSize(),
-                    frameSeqDecoder.getBounds().height() / frameSeqDecoder.getSampleSize(),
+                    dBounds.width() / frameSeqDecoder.getSampleSize(),
+                    dBounds.height() / frameSeqDecoder.getSampleSize(),
                     Bitmap.Config.ARGB_8888);
+        }
     }
 
     @Override
@@ -231,9 +237,7 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
     public boolean setVisible(boolean visible, boolean restart) {
         hookRecordCallbacks();
         if (this.autoPlay) {
-            if (FrameSeqDecoder.DEBUG) {
-                Log.d(TAG, this + ",visible:" + visible + ",restart:" + restart);
-            }
+            logger.debug("{} , visible:{}, restart:{}",mResName,visible, restart);
             if (visible) {
                 if (!isRunning()) {
                     innerStart();

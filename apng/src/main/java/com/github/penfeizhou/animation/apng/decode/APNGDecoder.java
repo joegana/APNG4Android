@@ -14,7 +14,6 @@ import com.github.penfeizhou.animation.decode.FrameSeqDecoder;
 import com.github.penfeizhou.animation.io.Reader;
 import com.github.penfeizhou.animation.loader.Loader;
 import com.moorgen.sdk.common.CUtilKt;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;

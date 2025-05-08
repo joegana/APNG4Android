@@ -41,6 +41,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 intent.putExtra("files", new String[]{
 //                        "world-cup.png",
 //                        "apng/wheel.png",
+                        "apng/apng_good_afternoon.png",
+                        "apng/apng_good_morning.png",
+                        "apng/apng_good_night.png",
                         "apng/voice_card.png",
                         "voice_card1.png",
                         "start.png",

@@ -63,19 +63,12 @@ dependencies {
     implementation("com.moorgen.controls:awebpencoder:${rootProject.ext.Version}")
     implementation("com.moorgen.controls:plugin_glide:${rootProject.ext.Version}")
 
-//    implementation project(':frameanimation')
-//    implementation project(':apng')
-//    implementation project(':awebp')
-//    implementation project(':gif')
+
+//    compileOnly project(':apng')
+//    compileOnly project(':awebp')
+//    compileOnly project(':gif')
 //    implementation project(':awebpencoder')
-
-    compileOnly project(':apng')
-    compileOnly project(':awebp')
-    compileOnly project(':gif')
-
-    implementation project(':awebpencoder')
-
-    implementation project(':plugin_glide')
+//    implementation project(':plugin_glide')
 
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'

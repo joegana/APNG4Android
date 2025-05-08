@@ -3,7 +3,6 @@ package com.github.penfeizhou.animation.apng;
 
 import android.content.Context;
 import android.text.TextUtils;
-
 import androidx.annotation.NonNull;
 import com.github.penfeizhou.animation.FrameAnimationDrawable;
 import com.github.penfeizhou.animation.apng.decode.APNGDecoder;
