@@ -37,7 +37,7 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "com.moorgen.sdk:common:1.7.6.2"
+    implementation "com.moorgen.sdk:common:$sdk_common"
     implementation("com.moorgen.controls:frameanimation:${rootProject.ext.Version}")
 
 //    api project(":frameanimation")

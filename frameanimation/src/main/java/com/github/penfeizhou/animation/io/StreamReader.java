@@ -21,14 +21,19 @@ public class StreamReader extends FilterInputStream implements Reader {
     }
 
     @Override
-    public byte peek() throws IOException {
+    public synchronized void close() throws IOException {
+        super.close();
+    }
+
+    @Override
+    public synchronized byte peek() throws IOException {
         byte ret = (byte) read();
         position++;
         return ret;
     }
 
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
+    public synchronized int read(byte[] b, int off, int len) throws IOException {
         int ret = super.read(b, off, len);
         position += Math.max(0, ret);
         return ret;
@@ -41,7 +46,7 @@ public class StreamReader extends FilterInputStream implements Reader {
     }
 
     @Override
-    public long skip(long n) throws IOException {
+    public synchronized long skip(long n) throws IOException {
         long toSkip = n;
 
         while (toSkip > 0) {
@@ -72,7 +77,7 @@ public class StreamReader extends FilterInputStream implements Reader {
     }
 
     @Override
-    public InputStream toInputStream() throws IOException {
+    public InputStream toInputStream() {
         return this;
     }
 }
