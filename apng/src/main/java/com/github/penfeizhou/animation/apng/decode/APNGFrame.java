@@ -5,11 +5,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-
 import com.github.penfeizhou.animation.apng.io.APNGReader;
 import com.github.penfeizhou.animation.apng.io.APNGWriter;
 import com.github.penfeizhou.animation.decode.Frame;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -164,7 +162,7 @@ public class APNGFrame extends Frame<APNGReader, APNGWriter> {
 
             canvas.drawBitmap(bitmap, srcRect, dstRect, paint);
             return bitmap;
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
