@@ -14,6 +14,7 @@ import com.github.penfeizhou.animation.awebpencoder.WebPEncoder;
 import com.github.penfeizhou.animation.decode.FrameSeqDecoder;
 import com.github.penfeizhou.animation.gif.GifDrawable;
 import com.github.penfeizhou.animation.loader.AssetStreamLoader;
+import com.github.penfeizhou.animation.webp.WebPDrawable;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -40,8 +41,8 @@ public class EncoderTestActivity extends Activity {
             public void run() {
 
                 final byte[] ret = WebPEncoder.fromDecoder(
-                        APNGDrawable.fromAsset(EncoderTestActivity.this,
-                                "test2.png").getFrameSeqDecoder()).build();
+                        WebPDrawable.fromAsset(EncoderTestActivity.this,
+                                "lossy.webp").getFrameSeqDecoder()).build();
                 imageView.post(new Runnable() {
                     @Override
                     public void run() {

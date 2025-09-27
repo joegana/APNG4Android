@@ -45,6 +45,8 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
     private final Set<FrameSeqDecoder.RenderListener> renderListeners = new HashSet<>();
     private final AtomicBoolean paused = new AtomicBoolean(true);
     private final Object loadMonitor = new Object();
+
+    private final Object readMonitor = new Object();
     private AtomicBoolean isLoaded = new AtomicBoolean(false);
     private final Runnable renderTask = new Runnable() {
         @Override
@@ -54,11 +56,13 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
             }
             if (canStep()) {
                 Trace.beginSection("renderTask:"+Thread.currentThread().getName());
-                long start = System.currentTimeMillis();
-                long delay = step();
-                long cost = System.currentTimeMillis() - start;
-                remove(renderTaskHl);
-                renderTaskHl =  post(this, Math.max(0, delay - cost));
+                synchronized (readMonitor) {
+                    long start = System.currentTimeMillis();
+                    long delay = step();
+                    long cost = System.currentTimeMillis() - start;
+                    remove(renderTaskHl);
+                    renderTaskHl = post(this, Math.max(0, delay - cost));
+                }
                 Set<FrameSeqDecoder.RenderListener> renders = new HashSet<>(renderListeners);
                 for (RenderListener renderListener : renders) {
                     renderListener.onRender(frameBuffer);
@@ -212,13 +216,15 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
                     synchronized (loadMonitor){
                         if(isLoaded.compareAndSet(false,true)) {
                             if (fullRect == null) {
-                                if (mReader == null) {
-                                    mReader = getReader(mLoader.obtain());
-                                } else {
-                                    mReader.reset();
+                                synchronized (readMonitor) {
+                                    if (mReader == null) {
+                                        mReader = getReader(mLoader.obtain());
+                                    } else {
+                                        mReader.reset();
+                                    }
+                                    Rect rect = read(mReader);
+                                    initCanvasBounds(rect);
                                 }
-                                Rect rect = read(mReader);
-                                initCanvasBounds(rect);
                             }
                         }
                     }
@@ -287,13 +293,15 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
                 try {
                     synchronized (loadMonitor){
                         if(isLoaded.compareAndSet(false,true)){
-                            if (mReader == null) {
-                                mReader = getReader(mLoader.obtain());
-                            } else {
-                                mReader.reset();
+                            synchronized (readMonitor) {
+                                if (mReader == null) {
+                                    mReader = getReader(mLoader.obtain());
+                                } else {
+                                    mReader.reset();
+                                }
+                                Rect rect = read(mReader);
+                                initCanvasBounds(rect);
                             }
-                            Rect rect = read(mReader);
-                            initCanvasBounds(rect);
                         }
                     }
                 } catch (Throwable e) {
@@ -338,9 +346,11 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
         }
         cachedCanvas.clear();
         try {
-            if (mReader != null) {
-                mReader.close();
-                mReader = null;
+            synchronized (readMonitor) {
+                if (mReader != null) {
+                    mReader.close();
+                    mReader = null;
+                }
             }
             if (mWriter != null) {
                 mWriter.close();
@@ -525,13 +535,15 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
         if (frames.isEmpty()) {
             synchronized (loadMonitor){
                 if(isLoaded.compareAndSet(false,true)){
-                    if (mReader == null) {
-                        mReader = getReader(mLoader.obtain());
-                    } else {
-                        mReader.reset();
+                    synchronized (readMonitor) {
+                        if (mReader == null) {
+                            mReader = getReader(mLoader.obtain());
+                        } else {
+                            mReader.reset();
+                        }
+                        Rect rect = read(mReader);
+                        initCanvasBounds(rect);
                     }
-                    Rect rect = read(mReader);
-                    initCanvasBounds(rect);
                 }
             }
 
