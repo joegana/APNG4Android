@@ -128,12 +128,8 @@ public class APNGDecoder extends FrameSeqDecoder<APNGReader, APNGWriter> {
                 otherChunks.add(chunk);
             }
         }
-//        boolean gc = frameBuffer != null ;
-        frameBuffer = ByteBuffer.allocateDirect((canvasWidth * canvasHeight / (sampleSize * sampleSize) + 1) * 4);
+        // frameBuffer 由基类 initCanvasBounds() 统一分配，这里只分配快照缓冲，避免直接内存被覆盖后成为孤儿
         snapShot.byteBuffer = ByteBuffer.allocateDirect((canvasWidth * canvasHeight / (sampleSize * sampleSize) + 1) * 4);
-//        if(gc){
-//            Runtime.getRuntime().gc();
-//        }
         if(DEBUG) {
             Perf.perfEnd("Apng Read");
         }

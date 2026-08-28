@@ -68,7 +68,8 @@ public class WebPDecoder extends FrameSeqDecoder<WebPReader, WebPWriter> {
 
     @Override
     protected void release() {
-
+        // 与 APNG/Gif 解码器对齐：释放 writer 内随最大帧增长的大缓冲
+        mWriter = null;
     }
 
     @Override

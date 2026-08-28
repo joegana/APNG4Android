@@ -83,6 +83,7 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
     protected Map<Bitmap, Canvas> cachedCanvas = new WeakHashMap<>();
     protected ByteBuffer frameBuffer;
     protected volatile Rect fullRect;
+    private volatile boolean mBroken = false;
     private W mWriter = getWriter();
     private R mReader = null;
     public static final boolean DEBUG = BuildConfig.DEBUG;
@@ -230,7 +231,9 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
                     }
                 } catch (Exception e) {
                     logger.error("{} getBounds error:",mResName,e);
-                    fullRect = RECT_EMPTY;
+                    // 用独立标志标记加载失败；不能复用 fullRect=RECT_EMPTY 作哨兵，
+                    // 否则 stop() 被永久短路，mReader 与已分配资源无法释放
+                    mBroken = true;
                 }
                 return fullRect;
             });
@@ -266,7 +269,7 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
     protected abstract int getLoopCount();
 
     public void start() {
-        if (fullRect == RECT_EMPTY) {
+        if (mBroken || fullRect == RECT_EMPTY) {
             return;
         }
         if (mState == FrameSeqDecoder.State.RUNNING || mState == FrameSeqDecoder.State.INITIALIZING) {
@@ -360,6 +363,7 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
         }
         isLoaded.compareAndSet(true,false);
         release();
+        mBroken = false;
         logger.debug("{}:{}  release and Set state to IDLE",mResName,debugInfo());
         mState = FrameSeqDecoder.State.IDLE;
         Set<FrameSeqDecoder.RenderListener> renders = new HashSet<>(renderListeners);
@@ -369,7 +373,8 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
     }
 
     public void stop() {
-        if (fullRect == RECT_EMPTY) {
+        if (fullRect == RECT_EMPTY && !mBroken) {
+            // 从未加载过，无需清理
             return;
         }
         if (mState == FrameSeqDecoder.State.FINISHING || mState == FrameSeqDecoder.State.IDLE) {
@@ -443,8 +448,15 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
                     sampleSize = sample;
                     synchronized (loadMonitor){
                         if(isLoaded.compareAndSet(false,true)){
-                            Rect rect = read(getReader(mLoader.obtain()));
-                            initCanvasBounds(rect);
+                            synchronized (readMonitor) {
+                                if (mReader == null) {
+                                    mReader = getReader(mLoader.obtain());
+                                } else {
+                                    mReader.reset();
+                                }
+                                Rect rect = read(mReader);
+                                initCanvasBounds(rect);
+                            }
                         }
                     }
 
@@ -566,6 +578,9 @@ public abstract class FrameSeqDecoder <R extends Reader, W extends Writer> {
         Rect dBounds = getBounds();
         Bitmap bitmap = Bitmap.createBitmap(dBounds.width() / getSampleSize(), dBounds.height() / getSampleSize(), Bitmap.Config.ARGB_8888);
         bitmap.copyPixelsFromBuffer(frameBuffer);
+        // 取帧完毕恢复空闲态，允许后续继续取帧或正常 stop() 释放资源
+        paused.compareAndSet(false, true);
+        mState = FrameSeqDecoder.State.IDLE;
         return bitmap;
     }
 

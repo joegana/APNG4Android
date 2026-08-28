@@ -78,6 +78,7 @@ class FrameDrawableTranscoder implements ResourceTranscoder<FrameSeqDecoder, Dra
 
                 @Override
                 public void recycle() {
+                    webPDrawable.stop();
                 }
 
                 @Override
@@ -103,6 +104,7 @@ class FrameDrawableTranscoder implements ResourceTranscoder<FrameSeqDecoder, Dra
 
                 @Override
                 public void recycle() {
+                    gifDrawable.stop();
                 }
 
                 @Override

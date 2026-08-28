@@ -2,11 +2,8 @@ package com.github.penfeizhou.animation.awebpencoder;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
-
 import androidx.annotation.WorkerThread;
-
 import android.util.Log;
-
 import com.github.penfeizhou.animation.decode.FrameSeqDecoder;
 import com.github.penfeizhou.animation.gif.decode.ApplicationExtension;
 import com.github.penfeizhou.animation.gif.decode.Block;
@@ -26,7 +23,6 @@ import com.github.penfeizhou.animation.webp.decode.VP8XChunk;
 import com.github.penfeizhou.animation.webp.decode.WebPParser;
 import com.github.penfeizhou.animation.webp.io.WebPReader;
 import com.github.penfeizhou.animation.webp.io.WebPWriter;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -72,23 +68,31 @@ public class WebPEncoder {
         for (int i = 0; i < frameCount; i++) {
             delay.add(decoder.getFrame(i).frameDuration);
         }
-        for (int i = 0; i < frameCount; i++) {
-            try {
+        try {
+            for (int i = 0; i < frameCount; i++) {
                 Bitmap bitmap = decoder.getFrameBitmap(i);
+                if (bitmap == null) {
+                    Log.e(TAG, "loadDecoder: frame " + i + " unavailable");
+                    continue;
+                }
                 FrameInfo frameInfo = new FrameBuilder()
                         .bitmap(bitmap).offsetX(0).offsetY(0).duration(delay.get(i))
                         .blending(false).disposal(true)
                         .build();
                 addFrame(frameInfo);
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            // 取帧结束必须 stop，释放 decoder 打开的 reader 与解码位图
+            decoder.stop();
         }
     }
 
     private void loadGif(Loader loader) {
+        GifReader reader = null;
         try {
-            GifReader reader = new GifReader(loader.obtain());
+            reader = new GifReader(loader.obtain());
             List<Block> blocks = GifParser.parse(reader);
             ColorTable globalColorTable = null;
             List<GifFrame> frames = new ArrayList<>();
@@ -152,6 +156,14 @@ public class WebPEncoder {
 
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
