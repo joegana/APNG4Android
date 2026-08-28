@@ -18,7 +18,7 @@ android {
         targetSdkVersion target_api_level
         versionCode 1
         versionName "1.0"
-
+        ndkVersion "26.1.10909125"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
         externalNativeBuild {

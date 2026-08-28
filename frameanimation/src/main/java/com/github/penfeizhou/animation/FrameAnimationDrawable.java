@@ -193,7 +193,7 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
     @Override
 
     public void onStart() {
-        CUtilKt.callOnMain(0, null, () -> {
+        CUtilKt.callOnMain(0, null,null, () -> {
             ArrayList<AnimationCallback> callbacks = new ArrayList<>(animationCallbacks);
             for (AnimationCallback animationCallback : callbacks) {
                 animationCallback.onAnimationStart(FrameAnimationDrawable.this);
@@ -220,12 +220,12 @@ public abstract class FrameAnimationDrawable<Decoder extends FrameSeqDecoder>
         }
         this.bitmap.copyPixelsFromBuffer(byteBuffer);
 
-        CUtilKt.callOnMain(0, null, this::invalidateSelf);
+        CUtilKt.callOnMain(0, null,null, this::invalidateSelf);
     }
 
     @Override
     public void onEnd() {
-        CUtilKt.callOnMain(0, null, () -> {
+        CUtilKt.callOnMain(0, null,null, () -> {
             ArrayList<AnimationCallback> callbacks = new ArrayList<>(animationCallbacks);
             for (AnimationCallback animationCallback : callbacks) {
                 animationCallback.onAnimationEnd(FrameAnimationDrawable.this);
