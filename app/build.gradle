@@ -64,9 +64,9 @@ dependencies {
     implementation("com.moorgen.controls:plugin_glide:${rootProject.ext.Version}")
 
 
-//    compileOnly project(':apng')
-//    compileOnly project(':awebp')
-//    compileOnly project(':gif')
+//    implementation project(':apng')
+//    implementation project(':awebp')
+//    implementation project(':gif')
 //    implementation project(':awebpencoder')
 //    implementation project(':plugin_glide')
 

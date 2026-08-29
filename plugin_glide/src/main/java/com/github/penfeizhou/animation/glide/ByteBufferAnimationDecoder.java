@@ -57,7 +57,7 @@ public class ByteBufferAnimationDecoder implements ResourceDecoder<ByteBuffer, F
         return new FrameSeqDecoderResource(decoder, source.limit());
     }
 
-    private static class FrameSeqDecoderResource implements Resource<FrameSeqDecoder> {
+    static class FrameSeqDecoderResource implements Resource<FrameSeqDecoder> {
         private final FrameSeqDecoder decoder;
         private final int size;
 

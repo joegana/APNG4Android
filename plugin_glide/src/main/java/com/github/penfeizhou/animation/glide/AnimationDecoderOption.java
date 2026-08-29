@@ -36,6 +36,15 @@ public final class AnimationDecoderOption {
             "com.github.penfeizhou.animation.glide.AnimationDecoderOption.DISABLE_ANIMATION_BOUNDS_MEASURE", false);
 
 
+    /**
+     * 流式加载动画时，超过该字节数的源数据不再整体驻留内存，
+     * 而是落盘到 cacheDir 临时文件并按需逐帧 seek 解码（内存占用从 O(文件大小) 降为 O(画布大小)）。
+     * 默认 2MB；设为小于等于 0 关闭落盘，保持旧的全量内存行为。
+     */
+    public static final Option<Integer> ANIMATION_STREAM_SPILL_THRESHOLD = Option.memory(
+            "com.github.penfeizhou.animation.glide.AnimationDecoderOption.ANIMATION_STREAM_SPILL_THRESHOLD",
+            2 * 1024 * 1024);
+
     private AnimationDecoderOption() {
     }
 }

@@ -25,7 +25,9 @@ public class GlideAnimationModule extends LibraryGlideModule {
     public void registerComponents(@NonNull Context context, @NonNull Glide glide, @NonNull Registry registry) {
         super.registerComponents(context, glide, registry);
         ByteBufferAnimationDecoder byteBufferAnimationDecoder = new ByteBufferAnimationDecoder();
-        StreamAnimationDecoder streamAnimationDecoder = new StreamAnimationDecoder(byteBufferAnimationDecoder);
+        StreamAnimationDecoder streamAnimationDecoder = new StreamAnimationDecoder(byteBufferAnimationDecoder, context);
+        // 清理上次进程遗留的大动画落盘文件
+        StreamAnimationDecoder.sweepStaleSpillFiles(context);
         registry.prepend(InputStream.class, FrameSeqDecoder.class, streamAnimationDecoder);
         registry.prepend(ByteBuffer.class, FrameSeqDecoder.class, byteBufferAnimationDecoder);
         registry.register(FrameSeqDecoder.class, Drawable.class, new FrameDrawableTranscoder(context));
